@@ -3,6 +3,15 @@ use crate::parser::ParsedDoxygen;
 pub(crate) fn transform_doxygen(doxygen: ParsedDoxygen) -> String {
     let mut rustdoc = String::new();
 
+    if let Some(deprecated) = doxygen.deprecated {
+        if let Some(message) = deprecated.message {
+            rustdoc += format!("**Warning!** This is deprecated! - {}", message).as_str();
+        } else {
+            rustdoc += format!("**Warning!** This is deprecated!").as_str();
+        }
+        rustdoc += "\n\n";
+    }
+
     if let Some(brief) = doxygen.brief {
         rustdoc += brief.as_str();
         rustdoc += "\n\n";

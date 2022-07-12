@@ -5,6 +5,7 @@ pub(crate) struct ParsedDoxygen {
     pub brief: Option<String>,
     pub description: Option<String>,
     pub params: Option<Vec<Param>>,
+    pub deprecated: Option<Deprecated>,
 }
 
 #[derive(Clone, Debug)]
@@ -12,6 +13,12 @@ pub(crate) struct Param {
     pub arg_name: String,
     pub direction: Option<Direction>,
     pub description: Option<String>,
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct Deprecated {
+    pub is_deprecated: bool,
+    pub message: Option<String>,
 }
 
 #[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
@@ -52,16 +59,16 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
     let mut brief = String::new();
     let mut description = vec![];
     let mut params: Vec<Param> = vec![];
+    let mut deprecated: Option<Deprecated> = None;
 
     input
         .lines()
         .rev()
         .for_each(|v| {
+            let mut v_split_whitespace = v.split_whitespace();
             if v.starts_with("@brief") || v.starts_with("\\brief") {
                 brief = v.replace("@brief", "").replace("\\brief", "").trim().to_string();
             } else if v.starts_with("@param") || v.starts_with("\\param") {
-                let mut v_split_whitespace = v.split_whitespace();
-
                 let mut raw_direction = v_split_whitespace.next().map_or(None, |v| Some(v.to_string()));
                 if let Some(str) = raw_direction {
                     if !str.contains("[") || !str.contains("]") {
@@ -79,6 +86,15 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
                     direction: if let Some(raw_direction) = raw_direction { Some(Direction::try_from(raw_direction.as_str()).unwrap()) } else { None },
                     description: Some(description.to_owned())
                 });
+            } else if v.starts_with("@deprecated") || v.starts_with("\\deprecated") {
+                let mut message = v_split_whitespace.map(|v| v.to_string()).collect::<Vec<String>>();
+                let message = &message[1..].to_vec().join(" ");
+                let message = if message.is_empty() { None } else { Some(message) };
+
+                deprecated = Some(Deprecated {
+                    is_deprecated: true,
+                    message: if let Some(message) = message { Some(message.to_owned()) } else { None },
+                })
             } else {
                 description.push(v);
             }
@@ -91,6 +107,7 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
         brief: if brief.is_empty() { None } else { Some(brief) },
         description: if description.is_empty() { None } else { Some(description.join("\n").trim().to_string()) },
         params: if params.is_empty() { None } else { Some(params) },
+        deprecated,
     }
 }
 
@@ -127,6 +144,15 @@ mod tests {
         let doxygen = parse_comment("@brief This is a function\n\nThis is the description of the thing.\nYou should do things with this function.\nOr not, I don't really care.");
 
         assert_eq!(doxygen.description, Some("This is the description of the thing.\nYou should do things with this function.\nOr not, I don't really care.".to_string()))
+    }
+
+    #[test]
+    fn parses_deprecated() {
+        let doxygen = parse_comment("@deprecated This function is pure spaghetti lmao\n\n@brief Creates a single spaghetti");
+
+        let deprecated = doxygen.deprecated.unwrap();
+        assert_eq!(deprecated.is_deprecated, true);
+        assert_eq!(deprecated.message, Some("This function is pure spaghetti lmao".to_string()));
     }
 
     #[test]
