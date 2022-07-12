@@ -54,6 +54,33 @@ impl TryFrom<&str> for Direction {
     }
 }
 
+trait NotationMatching {
+    fn starts_with_notation(&self, notation: &str) -> bool;
+    fn replace_notation(&self, notation: &str, to: &str) -> String;
+    fn contains_notation(&self, notation: &str) -> bool;
+}
+
+macro_rules! notation_matching {
+    ($t:ty) => {
+        impl NotationMatching for $t {
+            fn starts_with_notation(&self, notation: &str) -> bool {
+                self.starts_with(format!("@{}", notation).as_str()) || self.starts_with(format!("\\{}", notation).as_str()) || self.starts_with(format!("\\\\{}", notation).as_str())
+            }
+
+            fn replace_notation(&self, notation: &str, to: &str) -> String {
+                self.replace(format!("@{}", notation).as_str(), to).replace(format!("\\{}", notation).as_str(), to).replace(format!("\\\\{}", notation).as_str(), to)
+            }
+
+            fn contains_notation(&self, notation: &str) -> bool {
+                self.contains(format!("@{}", notation).as_str()) || self.contains(format!("\\{}", notation).as_str()) || self.contains(format!("\\\\{}", notation).as_str())
+            }
+        }
+    }
+}
+
+notation_matching!(&str);
+notation_matching!(String);
+
 pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
     let input = input.to_string();
     let mut brief = String::new();
@@ -67,15 +94,15 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
         .for_each(|v| {
             let v = v.trim();
             let mut v_split_whitespace = v.split_whitespace();
-            if v.starts_with("@brief") || v.starts_with("\\brief") {
-                brief = v.replace("@brief", "").replace("\\brief", "").trim().to_string();
-            } else if v.starts_with("@param") || v.starts_with("\\param") {
+            if v.starts_with_notation("brief") {
+                brief = v.replace_notation("brief", "").trim().to_string();
+            } else if v.starts_with_notation("param") {
                 let mut raw_direction = v_split_whitespace.next().map_or(None, |v| Some(v.to_string()));
                 if let Some(str) = raw_direction {
                     if !str.contains("[") || !str.contains("]") {
                         raw_direction = None;
                     } else {
-                        let value = str.replace("@param", "").replace("\\param", "").replace("[", "").replace("]", "");
+                        let value = str.replace_notation("param", "").replace("[", "").replace("]", "");
                         raw_direction = Some(value)
                     }
                 };
@@ -87,7 +114,7 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
                     direction: if let Some(raw_direction) = raw_direction { Some(Direction::try_from(raw_direction.as_str()).unwrap()) } else { None },
                     description: Some(description.to_owned())
                 });
-            } else if v.starts_with("@deprecated") || v.starts_with("\\deprecated") {
+            } else if v.starts_with_notation("deprecated") {
                 let mut message = v_split_whitespace.map(|v| v.to_string()).collect::<Vec<String>>();
                 let message = &message[1..].to_vec().join(" ");
                 let message = if message.is_empty() { None } else { Some(message) };
