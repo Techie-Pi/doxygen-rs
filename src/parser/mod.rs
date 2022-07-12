@@ -123,8 +123,10 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
                     is_deprecated: true,
                     message: if let Some(message) = message { Some(message.to_owned()) } else { None },
                 })
+            } else if v.starts_with_notation("details") {
+                description.push(v.replace_notation("details", ""))
             } else {
-                description.push(v);
+                description.push(v.to_string());
             }
         });
 
@@ -181,6 +183,14 @@ mod tests {
         let deprecated = doxygen.deprecated.unwrap();
         assert_eq!(deprecated.is_deprecated, true);
         assert_eq!(deprecated.message, Some("This function is pure spaghetti lmao".to_string()));
+    }
+
+    #[test]
+    fn parses_details() {
+        let doxygen = parse_comment("@brief This does things\n@details This does _advanced_ things");
+
+        let description = doxygen.description.unwrap();
+        assert_eq!(description, "This does _advanced_ things");
     }
 
     #[test]
