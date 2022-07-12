@@ -7,7 +7,7 @@ pub(crate) fn transform_doxygen(doxygen: ParsedDoxygen) -> String {
         if let Some(message) = deprecated.message {
             rustdoc += format!("**Warning!** This is deprecated! - {}", message).as_str();
         } else {
-            rustdoc += format!("**Warning!** This is deprecated!").as_str();
+            rustdoc += "**Warning!** This is deprecated!".to_string().as_str();
         }
         rustdoc += "\n\n";
     }

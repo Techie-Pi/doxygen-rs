@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter, Write};
+use std::fmt::{Display, Formatter};
 use crate::parser::unsupported::UNSUPPORTED_NOTATIONS;
 
 mod unsupported;
@@ -102,12 +102,12 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
             if v.starts_with_notation("brief") || v.starts_with_notation("short") {
                 brief = v.replace_notation("brief", "").replace_notation("short", "").trim().to_string();
             } else if v.starts_with_notation("param") {
-                let mut raw_direction = v_split_whitespace.next().map_or(None, |v| Some(v.to_string()));
+                let mut raw_direction = v_split_whitespace.next().map(|v| v.to_string());
                 if let Some(str) = raw_direction {
-                    if !str.contains("[") || !str.contains("]") {
+                    if !str.contains('[') || !str.contains(']') {
                         raw_direction = None;
                     } else {
-                        let value = str.replace_notation("param", "").replace("[", "").replace("]", "");
+                        let value = str.replace_notation("param", "").replace('[', "").replace(']', "");
                         raw_direction = Some(value)
                     }
                 };
@@ -116,17 +116,17 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
 
                 params.push(Param {
                     arg_name,
-                    direction: if let Some(raw_direction) = raw_direction { Some(Direction::try_from(raw_direction.as_str()).unwrap()) } else { None },
+                    direction: raw_direction.map(|raw_direction| Direction::try_from(raw_direction.as_str()).unwrap()),
                     description: Some(description.to_owned())
                 });
             } else if v.starts_with_notation("deprecated") {
-                let mut message = v_split_whitespace.map(|v| v.to_string()).collect::<Vec<String>>();
+                let message = v_split_whitespace.map(|v| v.to_string()).collect::<Vec<String>>();
                 let message = &message[1..].to_vec().join(" ");
                 let message = if message.is_empty() { None } else { Some(message) };
 
                 deprecated = Some(Deprecated {
                     is_deprecated: true,
-                    message: if let Some(message) = message { Some(message.to_owned()) } else { None },
+                    message: message.map(|message| message.to_owned()),
                 })
             } else if v.starts_with_notation("todo") {
                 todos.push(v.replace_notation("todo", "").trim().to_string())

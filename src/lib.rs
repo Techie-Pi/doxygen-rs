@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(clippy::bool_assert_comparison)]
+
 //! Simple Doxygen to Rustdoc translation.
 //!
 //! Provides a simple and straightforward API to translate _raw_ Doxygen comments to Rustdoc
