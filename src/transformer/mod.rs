@@ -1,4 +1,4 @@
-use crate::parser::ParsedDoxygen;
+use crate::ast::ParsedDoxygen;
 
 pub(crate) fn transform_doxygen(doxygen: ParsedDoxygen) -> String {
     let mut rustdoc = String::new();

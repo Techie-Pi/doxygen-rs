@@ -27,11 +27,11 @@
 //! * ``\\brief``
 //! * ``@brief``
 
-use crate::parser::parse_comment;
+use crate::ast::parse_comment;
 use crate::transformer::transform_doxygen;
 
-mod ast;
 mod parser;
+mod ast;
 mod transformer;
 mod utils;
 
