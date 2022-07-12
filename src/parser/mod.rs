@@ -129,7 +129,7 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
                     message: if let Some(message) = message { Some(message.to_owned()) } else { None },
                 })
             } else if v.starts_with_notation("todo") {
-                todos.push(v.replace_notation("todo", ""))
+                todos.push(v.replace_notation("todo", "").trim().to_string())
             } else if v.starts_with_notation("details") {
                 description.push(v.replace_notation("details", ""))
             } else {
@@ -206,6 +206,14 @@ mod tests {
 
         let description = doxygen.description.unwrap();
         assert_eq!(description, "This does _advanced_ things\nAnd the _advanced_ things are not easy");
+    }
+
+    #[test]
+    fn parses_todo() {
+        let doxygen = parse_comment("@brief This is WIP\n\n@todo Fix the bug where the C: drive is deleted");
+
+        let todos = doxygen.todos.unwrap();
+        assert_eq!(todos.get(0).unwrap(), "Fix the bug where the C: drive is deleted");
     }
 
     #[test]
