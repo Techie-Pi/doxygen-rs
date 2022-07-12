@@ -94,8 +94,8 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
         .for_each(|v| {
             let v = v.trim();
             let mut v_split_whitespace = v.split_whitespace();
-            if v.starts_with_notation("brief") {
-                brief = v.replace_notation("brief", "").trim().to_string();
+            if v.starts_with_notation("brief") || v.starts_with_notation("short") {
+                brief = v.replace_notation("brief", "").replace_notation("short", "").trim().to_string();
             } else if v.starts_with_notation("param") {
                 let mut raw_direction = v_split_whitespace.next().map_or(None, |v| Some(v.to_string()));
                 if let Some(str) = raw_direction {
