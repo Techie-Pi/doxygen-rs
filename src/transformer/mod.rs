@@ -17,10 +17,16 @@ pub(crate) fn transform_doxygen(doxygen: ParsedDoxygen) -> String {
         rustdoc += "# Arguments\n\n";
         for param in params {
             if let Some(description) = param.description {
-                rustdoc += format!("* `{}` - {}\n", param.arg_name, description).as_str();
+                rustdoc += format!("* `{}` - {}", param.arg_name, description).as_str();
             } else {
-                rustdoc += format!("* `{}`\n", param.arg_name).as_str();
+                rustdoc += format!("* `{}`", param.arg_name).as_str();
             }
+
+            if let Some(direction) = param.direction {
+                rustdoc += format!(" [Direction: {}]", direction).as_str();
+            }
+
+            rustdoc += "\n";
         }
     }
 

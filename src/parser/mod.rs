@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter, Write};
+
 #[derive(Clone, Debug)]
 pub(crate) struct ParsedDoxygen {
     pub brief: Option<String>,
@@ -17,6 +19,16 @@ pub(crate) enum Direction {
     In,
     Out,
     InOut,
+}
+
+impl Display for Direction {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Direction::In => f.write_str("In"),
+            Direction::Out => f.write_str("In, Out"),
+            Direction::InOut => f.write_str("Out"),
+        }
+    }
 }
 
 impl TryFrom<&str> for Direction {
@@ -45,9 +57,9 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
         .lines()
         .rev()
         .for_each(|v| {
-            if v.starts_with("@brief") {
-                brief = v.replace("@brief", "").trim().to_string();
-            } else if v.starts_with("@param") {
+            if v.starts_with("@brief") || v.starts_with("\\brief") {
+                brief = v.replace("@brief", "").replace("\\brief", "").trim().to_string();
+            } else if v.starts_with("@param") || v.starts_with("\\param") {
                 let mut v_split_whitespace = v.split_whitespace();
 
                 let mut raw_direction = v_split_whitespace.next().map_or(None, |v| Some(v.to_string()));
@@ -55,7 +67,7 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
                     if !str.contains("[") || !str.contains("]") {
                         raw_direction = None;
                     } else {
-                        let value = str.replace("@param", "").replace("[", "").replace("]", "");
+                        let value = str.replace("@param", "").replace("\\param", "").replace("[", "").replace("]", "");
                         raw_direction = Some(value)
                     }
                 };
@@ -67,7 +79,7 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
                     direction: if let Some(raw_direction) = raw_direction { Some(Direction::try_from(raw_direction.as_str()).unwrap()) } else { None },
                     description: Some(description.to_owned())
                 });
-            } else if !v.contains("@") {
+            } else {
                 description.push(v);
             }
         });
