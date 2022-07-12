@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter};
 use crate::parser::unsupported::UNSUPPORTED_NOTATIONS;
+use crate::utils::NotationMatching;
 
 mod unsupported;
 
@@ -57,38 +58,6 @@ impl TryFrom<&str> for Direction {
         }
     }
 }
-
-trait NotationMatching {
-    fn starts_with_notation(&self, notation: &str) -> bool;
-    fn replace_notation(&self, notation: &str, to: &str) -> String;
-    fn contains_notation(&self, notation: &str) -> bool;
-    fn remove_notation(&self, notation: &str) -> String;
-}
-
-macro_rules! notation_matching {
-    ($t:ty) => {
-        impl NotationMatching for $t {
-            fn starts_with_notation(&self, notation: &str) -> bool {
-                self.starts_with(format!("@{}", notation).as_str()) || self.starts_with(format!("\\{}", notation).as_str()) || self.starts_with(format!("\\\\{}", notation).as_str())
-            }
-
-            fn replace_notation(&self, notation: &str, to: &str) -> String {
-                self.replace(format!("@{}", notation).as_str(), to).replace(format!("\\{}", notation).as_str(), to).replace(format!("\\\\{}", notation).as_str(), to)
-            }
-
-            fn contains_notation(&self, notation: &str) -> bool {
-                self.contains(format!("@{}", notation).as_str()) || self.contains(format!("\\{}", notation).as_str()) || self.contains(format!("\\\\{}", notation).as_str())
-            }
-
-            fn remove_notation(&self, notation: &str) -> String {
-                self.replace_notation(notation, "")
-            }
-        }
-    }
-}
-
-notation_matching!(&str);
-notation_matching!(String);
 
 pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
     let input = input.to_string();

@@ -30,8 +30,10 @@
 use crate::parser::parse_comment;
 use crate::transformer::transform_doxygen;
 
+mod ast;
 mod parser;
 mod transformer;
+mod utils;
 
 /// Transforms raw Doxygen comments to raw Rustdoc comments
 ///
