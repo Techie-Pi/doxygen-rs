@@ -62,6 +62,7 @@ trait NotationMatching {
     fn starts_with_notation(&self, notation: &str) -> bool;
     fn replace_notation(&self, notation: &str, to: &str) -> String;
     fn contains_notation(&self, notation: &str) -> bool;
+    fn remove_notation(&self, notation: &str) -> String;
 }
 
 macro_rules! notation_matching {
@@ -77,6 +78,10 @@ macro_rules! notation_matching {
 
             fn contains_notation(&self, notation: &str) -> bool {
                 self.contains(format!("@{}", notation).as_str()) || self.contains(format!("\\{}", notation).as_str()) || self.contains(format!("\\\\{}", notation).as_str())
+            }
+
+            fn remove_notation(&self, notation: &str) -> String {
+                self.replace_notation(notation, "")
             }
         }
     }
@@ -100,14 +105,14 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
             let v = v.trim();
             let mut v_split_whitespace = v.split_whitespace();
             if v.starts_with_notation("brief") || v.starts_with_notation("short") {
-                brief = v.replace_notation("brief", "").replace_notation("short", "").trim().to_string();
+                brief = v.remove_notation("brief").remove_notation("short").trim().to_string();
             } else if v.starts_with_notation("param") {
                 let mut raw_direction = v_split_whitespace.next().map(|v| v.to_string());
                 if let Some(str) = raw_direction {
                     if !str.contains('[') || !str.contains(']') {
                         raw_direction = None;
                     } else {
-                        let value = str.replace_notation("param", "").replace('[', "").replace(']', "");
+                        let value = str.remove_notation("param").replace('[', "").replace(']', "");
                         raw_direction = Some(value)
                     }
                 };
@@ -129,9 +134,9 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
                     message: message.map(|message| message.to_owned()),
                 })
             } else if v.starts_with_notation("todo") {
-                todos.push(v.replace_notation("todo", "").trim().to_string())
+                todos.push(v.remove_notation("todo").trim().to_string())
             } else if v.starts_with_notation("details") {
-                description.push(v.replace_notation("details", ""))
+                description.push(v.remove_notation("details"))
             } else {
                 for notation in UNSUPPORTED_NOTATIONS {
                     if v.contains_notation(notation) {
