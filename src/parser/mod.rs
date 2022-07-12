@@ -65,6 +65,7 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
         .lines()
         .rev()
         .for_each(|v| {
+            let v = v.trim();
             let mut v_split_whitespace = v.split_whitespace();
             if v.starts_with("@brief") || v.starts_with("\\brief") {
                 brief = v.replace("@brief", "").replace("\\brief", "").trim().to_string();
