@@ -9,7 +9,7 @@
 //! use doxygen_rs::transform;
 //!
 //! let rustdoc = transform("@brief Example Doxygen brief");
-//! assert_eq!(rustdoc, "Example Doxygen\n\n");
+//! assert_eq!(rustdoc, "Example Doxygen brief\n\n");
 //! ```
 //!
 //! # Supported comments/notations
@@ -38,7 +38,7 @@ mod transformer;
 /// use doxygen_rs::transform;
 ///
 /// let rustdoc = transform("@brief Example Doxygen brief");
-/// assert_eq!(rustdoc, "Example Doxygen\n\n");
+/// assert_eq!(rustdoc, "Example Doxygen brief\n\n");
 /// ```
 pub fn transform(input: &str) -> String {
     let doxygen = parse_comment(input);
