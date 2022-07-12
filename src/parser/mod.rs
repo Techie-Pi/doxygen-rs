@@ -10,7 +10,7 @@ pub enum Value {
     Unknown,
 }
 
-pub(crate) fn generate_ast(input: &str) -> Vec<Value> {
+pub(crate) fn parse_comment(input: &str) -> Vec<Value> {
     let lines = input.split('\n').map(|v| v.to_string()).collect::<Vec<String>>();
     let mut ast = vec![];
 
@@ -30,11 +30,11 @@ pub(crate) fn generate_ast(input: &str) -> Vec<Value> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::generate_ast;
+    use crate::parser::parse_comment;
 
     #[test]
     fn test() {
-        let ast = generate_ast("@param random Random thing lmao\n\n@block This is going to be\nA block of text\nThis is crazy right??\n\nHello this is not anotated\n");
+        let ast = parse_comment("@param random Random thing lmao\n\n@block This is going to be\nA block of text\nThis is crazy right??\n\nHello this is not anotated\n");
         println!("{:?}", ast);
     }
 }
