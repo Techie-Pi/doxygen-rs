@@ -1,5 +1,7 @@
 use std::fmt::{Display, Formatter, Write};
 
+mod unsupported;
+
 #[derive(Clone, Debug)]
 pub(crate) struct ParsedDoxygen {
     pub brief: Option<String>,
@@ -187,10 +189,10 @@ mod tests {
 
     #[test]
     fn parses_details() {
-        let doxygen = parse_comment("@brief This does things\n@details This does _advanced_ things");
+        let doxygen = parse_comment("@brief This does things\n\n@details This does _advanced_ things\nAnd the _advanced_ things are not easy");
 
         let description = doxygen.description.unwrap();
-        assert_eq!(description, "This does _advanced_ things");
+        assert_eq!(description, "This does _advanced_ things\nAnd the _advanced_ things are not easy");
     }
 
     #[test]
