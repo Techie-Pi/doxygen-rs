@@ -39,5 +39,14 @@ pub(crate) fn transform_doxygen(doxygen: ParsedDoxygen) -> String {
         }
     }
 
+    if let Some(todos) = doxygen.todos {
+        rustdoc += "# To Do\n\n";
+        for todo in todos {
+            rustdoc += format!("* {}", todo).as_str();
+        }
+
+        rustdoc += "\n";
+    }
+
     rustdoc
 }

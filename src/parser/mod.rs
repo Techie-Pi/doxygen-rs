@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter, Write};
 
-mod unsupported;
+//mod unsupported;
 
 #[derive(Clone, Debug)]
 pub(crate) struct ParsedDoxygen {
@@ -8,6 +8,7 @@ pub(crate) struct ParsedDoxygen {
     pub description: Option<String>,
     pub params: Option<Vec<Param>>,
     pub deprecated: Option<Deprecated>,
+    pub todos: Option<Vec<String>>,
 }
 
 #[derive(Clone, Debug)]
@@ -89,6 +90,7 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
     let mut description = vec![];
     let mut params: Vec<Param> = vec![];
     let mut deprecated: Option<Deprecated> = None;
+    let mut todos: Vec<String> = vec![];
 
     input
         .lines()
@@ -125,6 +127,8 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
                     is_deprecated: true,
                     message: if let Some(message) = message { Some(message.to_owned()) } else { None },
                 })
+            } else if v.starts_with_notation("todo") {
+                todos.push(v.replace_notation("todo", ""))
             } else if v.starts_with_notation("details") {
                 description.push(v.replace_notation("details", ""))
             } else {
@@ -134,11 +138,13 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
 
     params.reverse();
     description.reverse();
+    todos.reverse();
 
     ParsedDoxygen {
         brief: if brief.is_empty() { None } else { Some(brief) },
         description: if description.is_empty() { None } else { Some(description.join("\n").trim().to_string()) },
         params: if params.is_empty() { None } else { Some(params) },
+        todos: if todos.is_empty() { None } else { Some(todos) },
         deprecated,
     }
 }
