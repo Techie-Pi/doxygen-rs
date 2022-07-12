@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter, Write};
+use crate::parser::unsupported::UNSUPPORTED_NOTATIONS;
 
-//mod unsupported;
+mod unsupported;
 
 #[derive(Clone, Debug)]
 pub(crate) struct ParsedDoxygen {
@@ -132,6 +133,12 @@ pub(crate) fn parse_comment(input: &str) -> ParsedDoxygen {
             } else if v.starts_with_notation("details") {
                 description.push(v.replace_notation("details", ""))
             } else {
+                for notation in UNSUPPORTED_NOTATIONS {
+                    if v.contains_notation(notation) {
+                        return;
+                    }
+                }
+
                 description.push(v.to_string());
             }
         });
