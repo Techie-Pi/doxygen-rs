@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["doxygen_rs"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.62.0/core/cmp/trait.Ord.html\" title=\"trait core::cmp::Ord\">Ord</a> for <a class=\"enum\" href=\"doxygen_rs/ast/enum.Direction.html\" title=\"enum doxygen_rs::ast::Direction\">Direction</a>","synthetic":false,"types":["doxygen_rs::ast::Direction"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

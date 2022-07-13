@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Direction","The direction of an argument. Check Doxygen docs for more info"]],"fn":[["generate_ast","Generates a [`ParsedDoxygen`] from a [`Vec`] of [`crate::parser::Value`]"]],"struct":[["Deprecated","Represents the deprecation status of an item."],["Param","Represents a single parameter."],["ParsedDoxygen","Represents a parsed Doxygen comment."]]});
