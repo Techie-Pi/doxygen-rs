@@ -27,12 +27,9 @@
 //! * ``\\brief``
 //! * ``@brief``
 
-use crate::ast::parse_comment;
-use crate::transformer::transform_ast;
-
 mod parser;
 mod ast;
-mod transformer;
+mod generator;
 mod utils;
 
 /// Transforms raw Doxygen comments to raw Rustdoc comments
@@ -48,7 +45,7 @@ mod utils;
 pub fn transform(input: &str) -> String {
     let parsed = parser::parse_comment(input);
     let ast = ast::generate_ast(parsed);
-    transform_ast(ast)
+    generator::generate_rustdoc(ast)
 }
 
 #[cfg(test)]
