@@ -66,12 +66,11 @@ pub fn transform_bindgen(input: &dyn AsRef<Path>) -> io::Result<String> {
     let parsed = parser::parse_bindgen(fs::read_to_string(input)?.as_str());
 
     for parsed_data in parsed {
-        println!("{:?}", parsed_data);
         match parsed_data {
             StringType::Parsed(data) => {
                 let ast = ast::generate_ast(data);
                 let rustdoc = generator::generate_rustdoc(ast);
-                let bindgen_doc = rustdoc.lines().map(|v| format!("#[doc = \"{}\"]\n", v)).collect::<String>();
+                let bindgen_doc = rustdoc.lines().map(|v| format!("#[doc = \"{}\"]\n", v.trim())).collect::<String>();
                 file_data.push(bindgen_doc);
             },
             StringType::Raw(raw) => file_data.push(raw),
