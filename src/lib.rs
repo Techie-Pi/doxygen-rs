@@ -26,10 +26,19 @@
 //! * ``\brief``
 //! * ``\\brief``
 //! * ``@brief``
+//!
+//! # Inner workings
+//!
+//! When the [``transform``] function is called, 3 other functions are called:
+//! 1. The input is parsed to a [`Vec`] of [`parser::Value`] ([`parser::parse_comment`])
+//! 2. The values are used to generate an AST ([`ast::generate_ast`])
+//! 3. The AST is used to generate the Rustdoc ([`generator::generate_rustdoc`])
+//!
+//! ``transform [parse_comment -> generate_ast -> generate_rustdoc]``
 
-mod parser;
-mod ast;
-mod generator;
+pub mod parser;
+pub mod ast;
+pub mod generator;
 mod utils;
 
 /// Transforms raw Doxygen comments to raw Rustdoc comments

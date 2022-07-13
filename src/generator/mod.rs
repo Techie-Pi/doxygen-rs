@@ -1,6 +1,22 @@
+//! Generate raw Rustdoc comments from a given [`crate::ast::ParsedDoxygen`]
+//!
+//! **The functions and structs here should _not_ be considered stable**
+
 use crate::ast::ParsedDoxygen;
 
-pub(crate) fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
+/// Generate raw Rustdoc comments from a given [`crate::ast::ParsedDoxygen`]
+///
+/// # Examples
+/// ```
+/// use doxygen_rs::ast::generate_ast;
+/// use doxygen_rs::generator::generate_rustdoc;
+/// use doxygen_rs::parser::parse_comment;
+///
+/// let parsed = parse_comment("@brief Random comment");
+/// let ast = generate_ast(parsed);
+/// let rustdoc = generate_rustdoc(ast);
+/// ```
+pub fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
     let mut rustdoc = String::new();
 
     if let Some(deprecated) = doxygen.deprecated {

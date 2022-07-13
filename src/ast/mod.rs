@@ -1,33 +1,51 @@
+//! This module contains functions that generate ASTs from [`Vec`] of [`crate::parser::Value`]
+//!
+//! **The functions and structs here should _not_ be considered stable**
+
 use std::fmt::{Display, Formatter};
 use crate::parser::Value;
 use crate::utils::NotationMatching;
 
 mod unsupported;
 
+/// Represents a parsed Doxygen comment.
 #[derive(Clone, Debug)]
-pub(crate) struct ParsedDoxygen {
+pub struct ParsedDoxygen {
+    /// A _brief_ introduction to the item being documented.
     pub brief: Option<String>,
+    /// A _description_ of the item being documented.
     pub description: Option<String>,
+    /// The _parameters_ of the item being documented.
     pub params: Option<Vec<Param>>,
+    /// Data about the _deprecation_ status of the item being documented.
     pub deprecated: Option<Deprecated>,
+    /// List of _To Do_s of the item being documented.
     pub todos: Option<Vec<String>>,
 }
 
+/// Represents a single _parameter_.
 #[derive(Clone, Debug)]
-pub(crate) struct Param {
+pub struct Param {
+    /// The _argument name_ of the item being documented.
     pub arg_name: String,
+    /// The _direction_ of the argument. [Check Doxygen docs for more info](https://www.doxygen.nl/manual/commands.html#cmdparam)
     pub direction: Option<Direction>,
+    /// The _description_ of the argument.
     pub description: Option<String>,
 }
 
+/// Represents the _deprecation_ status of an item.
 #[derive(Clone, Debug)]
-pub(crate) struct Deprecated {
+pub struct Deprecated {
+    /// Whether _is deprecated_ or not
     pub is_deprecated: bool,
+    /// The message left with the deprecation status
     pub message: Option<String>,
 }
 
+/// The _direction_ of an argument. [Check Doxygen docs for more info](https://www.doxygen.nl/manual/commands.html#cmdparam)
 #[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
-pub(crate) enum Direction {
+pub enum Direction {
     In,
     Out,
     InOut,
@@ -65,7 +83,17 @@ enum MoveBufferTo {
     ToDo,
 }
 
-pub(crate) fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
+/// Generates a [`ParsedDoxygen`] from a [`Vec`] of [`crate::parser::Value`]
+///
+/// # Examples
+/// ```
+/// use doxygen_rs::ast::generate_ast;
+/// use doxygen_rs::parser::parse_comment;
+///
+/// let parsed = parse_comment("@brief Random comment");
+/// let ast = generate_ast(parsed);
+/// ```
+pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
     let mut brief = None;
     let mut deprecated = None;
     let mut todos = vec![];

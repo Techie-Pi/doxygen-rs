@@ -1,16 +1,31 @@
+//! This module contains functions to generate a [`Vec`] of [`Value`] from a given input
+//!
+//! **The functions and structs here should _not_ be considered stable**
+
 use crate::utils::NotationMatching;
 
+/// The enum used to represent the distinct _raw_ values of a comment
 #[derive(Debug, Clone)]
 pub enum Value {
-    // (String, String) -> (Raw Notation, Raw Contents)
+    /// The first [`String`] is the _notation_ found, and the second [`String`] are the _contents without the notation_
     Notation(String, String),
-    // String -> Raw Contents
+    /// Raw text, without notation
     Text(String),
+    /// Double new-line, or any other separator
     Separator,
+    /// Unknown value
     Unknown,
 }
 
-pub(crate) fn parse_comment(input: &str) -> Vec<Value> {
+/// Generate a [`Vec`] of [`Value`] from a given [`&str`]
+///
+/// # Examples
+/// ```
+/// use doxygen_rs::parser::parse_comment;
+///
+/// let parsed = parse_comment("@brief Random function");
+/// ```
+pub fn parse_comment(input: &str) -> Vec<Value> {
     let lines = input.split('\n').map(|v| v.to_string()).collect::<Vec<String>>();
     let mut ast = vec![];
 
