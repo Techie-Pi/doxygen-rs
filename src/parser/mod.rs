@@ -17,6 +17,17 @@ pub enum Value {
     Unknown,
 }
 
+fn parse_single_line(line: &str) -> Value {
+    if let Some(notation) = line.contains_any_notation() {
+        let split = line.split_whitespace().collect::<Vec<&str>>();
+        Value::Notation(notation.clone(), split[1..].to_vec().join(" ").to_string())
+    } else if line.is_empty() {
+        Value::Separator
+    } else {
+        Value::Text(line.to_string())
+    }
+}
+
 /// Generate a [`Vec`] of [`Value`] from a given [`&str`]
 ///
 /// # Examples
@@ -30,14 +41,13 @@ pub fn parse_comment(input: &str) -> Vec<Value> {
     let mut ast = vec![];
 
     for line in lines {
-        if let Some(notation) = line.contains_any_notation() {
-            let split = line.split_whitespace().collect::<Vec<&str>>();
-            ast.push(Value::Notation(notation.clone(), split[1..].to_vec().join(" ").to_string()));
-        } else if line.is_empty() {
-            ast.push(Value::Separator);
+        let value = if line.trim().starts_with("* ") {
+            parse_single_line(line.replace("* ", "").as_str())
         } else {
-            ast.push(Value::Text(line));
-        }
+            parse_single_line(line.as_str())
+        };
+
+        ast.push(value);
     }
     ast.push(Value::Separator);
 
