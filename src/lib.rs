@@ -15,8 +15,8 @@
 //! assert_eq!(rustdoc, "Example Doxygen brief\n\n");
 //! ```
 //!
-//! # Supported comments/notations
-//! Currently the following notations are supported:
+//! # Supported commands
+//! Currently the following commands are supported:
 //! * [``brief``](https://www.doxygen.nl/manual/commands.html#cmdbrief)
 //! * [``short``](https://www.doxygen.nl/manual/commands.html#cmdshort)
 //! * [``param``](https://www.doxygen.nl/manual/commands.html#cmdparam)
