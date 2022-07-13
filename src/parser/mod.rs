@@ -44,6 +44,32 @@ pub fn parse_comment(input: &str) -> Vec<Value> {
     ast
 }
 
+#[derive(Clone, Debug)]
+pub enum StringType {
+    Parsed(Vec<Value>),
+    Raw(String),
+}
+
+pub fn parse_bindgen(input: &str) -> Vec<StringType> {
+    let lines: Vec<String> = input.split('\n').map(|v| v.to_string()).collect::<Vec<String>>();
+    let mut strings = vec![];
+
+    let mut comment_buffer = vec![];
+    for line in lines {
+        if line.trim().starts_with("#[doc = \"") && line.trim().ends_with("\"]") {
+            comment_buffer.push(line.replace("#[doc = \"", "").replace("\"]", ""));
+        } else {
+            if !comment_buffer.is_empty() {
+                strings.push(StringType::Parsed(parse_comment(comment_buffer.join("\n").as_str())));
+                comment_buffer = vec![];
+            }
+            strings.push(StringType::Raw(line));
+        }
+    }
+
+    strings
+}
+
 #[cfg(test)]
 mod tests {
     use crate::parser::parse_comment;

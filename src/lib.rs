@@ -36,6 +36,10 @@
 //!
 //! ``transform [parse_comment -> generate_ast -> generate_rustdoc]``
 
+use std::{fs, io};
+use std::path::Path;
+use crate::parser::StringType;
+
 pub mod parser;
 pub mod ast;
 pub mod generator;
@@ -57,6 +61,26 @@ pub fn transform(input: &str) -> String {
     generator::generate_rustdoc(ast)
 }
 
+pub fn transform_bindgen(input: &dyn AsRef<Path>) -> io::Result<String> {
+    let mut file_data = vec![];
+    let parsed = parser::parse_bindgen(fs::read_to_string(input)?.as_str());
+
+    for parsed_data in parsed {
+        println!("{:?}", parsed_data);
+        match parsed_data {
+            StringType::Parsed(data) => {
+                let ast = ast::generate_ast(data);
+                let rustdoc = generator::generate_rustdoc(ast);
+                let bindgen_doc = rustdoc.lines().map(|v| format!("#[doc = \"{}\"]\n", v)).collect::<String>();
+                file_data.push(bindgen_doc);
+            },
+            StringType::Raw(raw) => file_data.push(raw),
+        }
+    }
+
+    Ok(file_data.join("\n"))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -64,5 +88,10 @@ mod tests {
     #[test]
     fn raw_transform() {
         println!("{}", transform("@brief Creates a new dog.\n\nCreates a new Dog named `_name` with half of its maximum energy.\n\n@param _name The dog's name.\n@param[in] _test Test for In\n\n@deprecated\n\n@return a great thing"))
+    }
+
+    #[test]
+    fn raw_transform_bindgen() {
+        println!("{}", transform_bindgen(&"assets/tests/example-bindgen.rs").unwrap())
     }
 }
