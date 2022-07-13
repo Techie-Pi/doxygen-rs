@@ -1,5 +1,4 @@
 use std::fmt::{Display, Formatter};
-use crate::ast::unsupported::UNSUPPORTED_NOTATIONS;
 use crate::parser::Value;
 use crate::utils::NotationMatching;
 
@@ -77,7 +76,6 @@ pub(crate) fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
     let mut paragraph_buffer = vec![];
     let mut move_buffer_to = None;
 
-    let mut previous_value = None;
     for value in input {
         let value_clone = value.clone();
         match value {
@@ -157,8 +155,6 @@ pub(crate) fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
             }
             Value::Unknown => {}
         }
-
-        previous_value = Some(value_clone);
     }
 
     let description = if description.is_empty() { None } else { Some(description.join("\n")) };
