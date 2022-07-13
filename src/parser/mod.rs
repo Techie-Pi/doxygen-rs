@@ -38,7 +38,7 @@ fn parse_single_line(line: &str) -> Value {
 /// ```
 pub fn parse_comment(input: &str) -> Vec<Value> {
     let lines = input.split('\n').map(|v| v.to_string()).collect::<Vec<String>>();
-    let mut ast = vec![];
+    let mut values = vec![];
 
     for line in lines {
         let value = if line.trim().starts_with("* ") {
@@ -47,11 +47,11 @@ pub fn parse_comment(input: &str) -> Vec<Value> {
             parse_single_line(line.as_str())
         };
 
-        ast.push(value);
+        values.push(value);
     }
-    ast.push(Value::Separator);
+    values.push(Value::Separator);
 
-    ast
+    values
 }
 
 /// The enum used to represent values of a _raw_ bindgen file
@@ -90,8 +90,8 @@ mod tests {
 
     #[test]
     fn test() {
-        let ast = parse_comment("@param random Random thing lmao\n\n@block This is going to be\nA block of text\nThis is crazy right??\n\nHello this is not anotated\n");
-        println!("{:?}", ast);
+        let parsed = parse_comment("@param random Random thing lmao\n\n@block This is going to be\nA block of text\nThis is crazy right??\n\nHello this is not anotated\n");
+        println!("{:?}", parsed);
     }
 }
 
