@@ -38,6 +38,14 @@ pub fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
         rustdoc += "\n\n";
     }
 
+    if let Some(returns) = doxygen.returns {
+        let mut returns = returns;
+        returns.get_mut(0..1).unwrap().make_ascii_uppercase();
+
+        rustdoc += format!("Returns: {}", returns).as_str();
+        rustdoc += "\n\n";
+    }
+
     if let Some(params) = doxygen.params {
         rustdoc += "# Arguments\n\n";
         for param in params {

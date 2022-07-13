@@ -21,6 +21,8 @@ pub struct ParsedDoxygen {
     pub deprecated: Option<Deprecated>,
     /// List of _To Do_s of the item being documented.
     pub todos: Option<Vec<String>>,
+    /// Description of the value being _returned_
+    pub returns: Option<String>,
 }
 
 /// Represents a single _parameter_.
@@ -96,6 +98,7 @@ enum MoveBufferTo {
 pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
     let mut brief = None;
     let mut deprecated = None;
+    let mut returns = None;
     let mut todos = vec![];
     let mut params = vec![];
     let mut description = vec![];
@@ -158,6 +161,8 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
                         direction,
                         description,
                     })
+                } else if notation.starts_with_notation("return") || notation.starts_with_notation("returns") {
+                    returns = Some(content);
                 }
             }
             Value::Text(content) => {
@@ -194,6 +199,7 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
         params,
         deprecated,
         todos,
+        returns,
     }
 }
 
