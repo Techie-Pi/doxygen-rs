@@ -1,3 +1,9 @@
+/// * Long param descriptions are not yet supported
+/// * Groups are a WIP
+/// * `@ref` is not yet supported
+/// * `@p` is not yet supported
+/// * `@sa` is not yet supported
+
 extern "C" {
     #[must_use]
     #[doc = "@name Memory management"]
