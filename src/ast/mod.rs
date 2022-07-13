@@ -77,7 +77,6 @@ pub(crate) fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
     let mut move_buffer_to = None;
 
     for value in input {
-        let value_clone = value.clone();
         match value {
             Value::Notation(notation, content) => {
                 if notation.starts_with_notation("brief") {
@@ -85,7 +84,7 @@ pub(crate) fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
                 } else if notation.starts_with_notation("deprecated") {
                     deprecated = Some(Deprecated {
                         is_deprecated: true,
-                        message: Some(content),
+                        message: if content.is_empty() { None } else { Some(content) },
                     });
                 } else if notation.starts_with_notation("details") {
                     currently_saving_paragraph = true;
