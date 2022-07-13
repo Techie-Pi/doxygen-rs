@@ -24,6 +24,7 @@ pub(crate) fn parse_comment(input: &str) -> Vec<Value> {
             ast.push(Value::Text(line));
         }
     }
+    ast.push(Value::Separator);
 
     ast
 }

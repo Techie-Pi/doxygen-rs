@@ -28,7 +28,7 @@
 //! * ``@brief``
 
 use crate::ast::parse_comment;
-use crate::transformer::transform_doxygen;
+use crate::transformer::transform_ast;
 
 mod parser;
 mod ast;
@@ -46,8 +46,9 @@ mod utils;
 /// assert_eq!(rustdoc, "Example Doxygen brief\n\n");
 /// ```
 pub fn transform(input: &str) -> String {
-    let doxygen = parse_comment(input);
-    transform_doxygen(doxygen)
+    let parsed = parser::parse_comment(input);
+    let ast = ast::generate_ast(parsed);
+    transform_ast(ast)
 }
 
 #[cfg(test)]

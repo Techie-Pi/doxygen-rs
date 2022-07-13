@@ -1,6 +1,6 @@
 use crate::ast::ParsedDoxygen;
 
-pub(crate) fn transform_doxygen(doxygen: ParsedDoxygen) -> String {
+pub(crate) fn transform_ast(doxygen: ParsedDoxygen) -> String {
     let mut rustdoc = String::new();
 
     if let Some(deprecated) = doxygen.deprecated {
