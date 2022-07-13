@@ -21,6 +21,10 @@
 //! * [``short``](https://www.doxygen.nl/manual/commands.html#cmdshort)
 //! * [``param``](https://www.doxygen.nl/manual/commands.html#cmdparam)
 //! * [``deprecated``](https://www.doxygen.nl/manual/commands.html#cmddeprecated)
+//! * [``details``](https://www.doxygen.nl/manual/commands.html#cmddetails)
+//! * [``return``](https://www.doxygen.nl/manual/commands.html#cmdreturn)
+//! * [``returns``](https://www.doxygen.nl/manual/commands.html#cmdreturns)
+//! * [``todo``](https://www.doxygen.nl/manual/commands.html#cmdtodo)
 //!
 //! And the following _flavours_ are soported:
 //! * ``\brief``
