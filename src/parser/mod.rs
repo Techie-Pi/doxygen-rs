@@ -44,12 +44,16 @@ pub fn parse_comment(input: &str) -> Vec<Value> {
     ast
 }
 
+/// The enum used to represent values of a _raw_ bindgen file
 #[derive(Clone, Debug)]
 pub enum StringType {
+    /// Parsed value
     Parsed(Vec<Value>),
+    /// No-doc, value is given raw
     Raw(String),
 }
 
+/// Generate a [`Vec`] of [`StringType`] from a given [`&str`], assuming it's a _raw_ bindgen file
 pub fn parse_bindgen(input: &str) -> Vec<StringType> {
     let lines: Vec<String> = input.split('\n').map(|v| v.to_string()).collect::<Vec<String>>();
     let mut strings = vec![];
