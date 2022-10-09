@@ -65,7 +65,7 @@ pub fn transform(input: &str) -> String {
     generator::generate_rustdoc(ast)
 }
 
-pub fn transform_bindgen(input: &dyn AsRef<Path>) -> io::Result<String> {
+pub fn transform_bindgen<P: AsRef<Path>>(input: P) -> io::Result<String> {
     let mut file_data = vec![];
     let parsed = parser::parse_bindgen(fs::read_to_string(input)?.as_str());
 
