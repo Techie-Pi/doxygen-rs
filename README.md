@@ -18,9 +18,5 @@ let rustdoc = transform("@brief Example Doxygen brief");
 assert_eq!(rustdoc, "Example Doxygen brief\n\n");
 ```
 
-## Structure
-This repository is organized as follows:
-- ``parser`` - The module in charge of taking _raw_ Boxygen comments and generating a list of values
-- ``ast`` - The module in charge of taking the list of values and generating an AST
-- ``generator`` - The module in charge of taking the AST and generating _raw_ Rustdoc comments
-
+## Architecture
+Check [architecture.md](docs/architecture.md)

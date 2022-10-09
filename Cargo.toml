@@ -3,4 +3,9 @@ name = "doxygen-rs"
 version = "0.1.0"
 edition = "2021"
 
-[dependencies]
+[dev-dependencies]
+criterion = "0.4"
+
+[[bench]]
+name = "transforming-benchmark"
+harness = false
