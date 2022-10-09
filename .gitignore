@@ -12,3 +12,4 @@ Cargo.lock
 .idea/
 
 assets/tests/bindgen-transformed.rs
+assets/tests/ctru-sys-bindings-transformed.rs

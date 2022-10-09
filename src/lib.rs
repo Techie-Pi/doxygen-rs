@@ -95,6 +95,15 @@ mod tests {
 
     #[test]
     fn raw_transform_bindgen() {
-        println!("{}", transform_bindgen(&"assets/tests/example-bindgen.rs").unwrap())
+        let result = transform_bindgen("assets/tests/example-bindgen.rs").unwrap();
+        let _ = fs::remove_file("assets/tests/bindgen-transformed.rs");
+        fs::write("assets/tests/bindgen-transformed.rs", result).unwrap();
+    }
+
+    #[test]
+    fn transform_ctru_sys_bindings() {
+        let result = transform_bindgen("assets/tests/ctru-sys-bindings.rs").unwrap();
+        let _ = fs::remove_file("assets/tests/ctru-sys-bindings-transformed.rs");
+        fs::write("assets/tests/ctru-sys-bindings-transformed.rs", result).unwrap();
     }
 }
