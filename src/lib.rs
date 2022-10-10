@@ -64,7 +64,7 @@ pub fn transform(input: &str) -> String {
     generator::generate_rustdoc(ast)
 }
 
-pub fn transform_bindgen(input: &str) -> io::Result<String> {
+pub fn transform_bindgen(input: &str) -> String {
     let mut file_data = vec![];
     let parsed = parser::parse_bindgen(input);
 
@@ -80,7 +80,7 @@ pub fn transform_bindgen(input: &str) -> io::Result<String> {
         }
     }
 
-    Ok(file_data.join("\n"))
+    file_data.join("\n")
 }
 
 #[cfg(test)]
