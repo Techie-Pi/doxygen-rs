@@ -40,7 +40,7 @@
 //!
 //! ``transform [parse_comment -> generate_ast -> generate_rustdoc]``
 
-use std::{fs, io};
+use std::{fs};
 use crate::parser::StringType;
 
 pub mod parser;
@@ -95,7 +95,7 @@ mod tests {
     #[test]
     fn raw_transform_bindgen() {
         let file = fs::read_to_string("assets/tests/example-bindgen.rs").unwrap();
-        let result = transform_bindgen(file.as_str()).unwrap();
+        let result = transform_bindgen(file.as_str());
         let _ = fs::remove_file("assets/tests/bindgen-transformed.rs");
         fs::write("assets/tests/bindgen-transformed.rs", result).unwrap();
     }
@@ -103,7 +103,7 @@ mod tests {
     #[test]
     fn transform_ctru_sys_bindings() {
         let file = fs::read_to_string("assets/tests/ctru-sys-bindings.rs").unwrap();
-        let result = transform_bindgen(file.as_str()).unwrap();
+        let result = transform_bindgen(file.as_str());
         let _ = fs::remove_file("assets/tests/ctru-sys-bindings-transformed.rs");
         fs::write("assets/tests/ctru-sys-bindings-transformed.rs", result).unwrap();
     }
