@@ -41,7 +41,6 @@
 //! ``transform [parse_comment -> generate_ast -> generate_rustdoc]``
 
 use std::{fs, io};
-use std::path::Path;
 use crate::parser::StringType;
 
 pub mod parser;
@@ -65,9 +64,9 @@ pub fn transform(input: &str) -> String {
     generator::generate_rustdoc(ast)
 }
 
-pub fn transform_bindgen<P: AsRef<Path>>(input: P) -> io::Result<String> {
+pub fn transform_bindgen(input: &str) -> io::Result<String> {
     let mut file_data = vec![];
-    let parsed = parser::parse_bindgen(fs::read_to_string(input)?.as_str());
+    let parsed = parser::parse_bindgen(input);
 
     for parsed_data in parsed {
         match parsed_data {
@@ -95,14 +94,16 @@ mod tests {
 
     #[test]
     fn raw_transform_bindgen() {
-        let result = transform_bindgen("assets/tests/example-bindgen.rs").unwrap();
+        let file = fs::read_to_string("assets/tests/example-bindgen.rs").unwrap();
+        let result = transform_bindgen(file.as_str()).unwrap();
         let _ = fs::remove_file("assets/tests/bindgen-transformed.rs");
         fs::write("assets/tests/bindgen-transformed.rs", result).unwrap();
     }
 
     #[test]
     fn transform_ctru_sys_bindings() {
-        let result = transform_bindgen("assets/tests/ctru-sys-bindings.rs").unwrap();
+        let file = fs::read_to_string("assets/tests/ctru-sys-bindings.rs").unwrap();
+        let result = transform_bindgen(file.as_str()).unwrap();
         let _ = fs::remove_file("assets/tests/ctru-sys-bindings-transformed.rs");
         fs::write("assets/tests/ctru-sys-bindings-transformed.rs", result).unwrap();
     }
