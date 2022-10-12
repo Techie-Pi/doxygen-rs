@@ -17,14 +17,37 @@ pub enum Value {
     Unknown,
 }
 
+fn make_links_clickable(input: &str) -> String {
+    input
+        .split_whitespace()
+        .map(|v| {
+            if v.starts_with("http://") || v.starts_with("https://") {
+                let v = {
+                    let last_char = v.chars().last();
+                    if last_char == Some('.') || last_char == Some(',') {
+                        &v[..v.len() - 1]
+                    } else {
+                        v
+                    }
+                };
+                format!("<{}>", v)
+            } else {
+                v.to_owned()
+            }
+        })
+        .collect::<Vec<String>>()
+        .join(" ")
+}
+
 fn parse_single_line(line: &str) -> Value {
+    let line = make_links_clickable(line);
     if let Some(notation) = line.contains_any_notation() {
         let split = line.split_whitespace().collect::<Vec<&str>>();
         Value::Notation(notation.clone(), split[1..].to_vec().join(" ").to_string())
     } else if line.is_empty() {
         Value::Separator
     } else {
-        Value::Text(line.to_string())
+        Value::Text(line)
     }
 }
 
