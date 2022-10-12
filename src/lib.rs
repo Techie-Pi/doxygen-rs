@@ -85,6 +85,7 @@ pub fn transform_bindgen(input: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs;
 
     #[test]
     fn raw_transform() {
