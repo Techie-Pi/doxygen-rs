@@ -19,6 +19,10 @@ use crate::ast::ParsedDoxygen;
 pub fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
     let mut rustdoc = String::new();
 
+    if let Some(title) = doxygen.title {
+        rustdoc += format!("# {}\n\n", title).as_str();
+    }
+
     if let Some(deprecated) = doxygen.deprecated {
         if let Some(message) = deprecated.message {
             rustdoc += format!("**Warning!** This is deprecated! - {}", message).as_str();

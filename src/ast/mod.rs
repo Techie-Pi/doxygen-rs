@@ -11,6 +11,8 @@ mod unsupported;
 /// Represents a parsed Doxygen comment.
 #[derive(Clone, Debug)]
 pub struct ParsedDoxygen {
+    /// _Title_ of the item being documented
+    pub title: Option<String>,
     /// A _brief_ introduction to the item being documented.
     pub brief: Option<String>,
     /// A _description_ of the item being documented.
@@ -96,6 +98,7 @@ enum MoveBufferTo {
 /// let ast = generate_ast(parsed);
 /// ```
 pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
+    let mut title = None;
     let mut brief = None;
     let mut deprecated = None;
     let mut returns = None;
@@ -163,6 +166,10 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
                     })
                 } else if notation.starts_with_notation("return") || notation.starts_with_notation("returns") {
                     returns = Some(content);
+                } else if notation.starts_with_notation("name") {
+                    title = Some(content)
+                } else {
+                    println!("{:?}", notation);
                 }
             }
             Value::Text(content) => {
@@ -196,6 +203,7 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
     let params = if params.is_empty() { None } else { Some(params) };
 
     ParsedDoxygen {
+        title,
         brief,
         description,
         params,
