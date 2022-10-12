@@ -169,7 +169,7 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
                 } else if notation.starts_with_notation("name") {
                     title = Some(content)
                 } else {
-                    println!("{:?}", notation);
+                    //println!("{:?}", notation);
                 }
             }
             Value::Text(content) => {
