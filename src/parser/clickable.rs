@@ -29,13 +29,11 @@ fn make_refs_clickable(input: &str) -> String {
 
                 apply_ref_to_next = false;
                 format!("[`{}`]", v)
+            } else if v.contains_notation("ref") || v.contains_notation("sa") || v.contains_notation("see") {
+                apply_ref_to_next = true;
+                "".to_owned()
             } else {
-                if v.contains_notation("ref") || v.contains_notation("sa") || v.contains_notation("see") {
-                    apply_ref_to_next = true;
-                    "".to_owned()
-                } else {
-                    v.to_owned()
-                }
+                v.to_owned()
             }
         })
         .collect::<Vec<String>>()
@@ -47,7 +45,7 @@ fn render_code(input: &str) -> String {
         .split_whitespace()
         .map(|v| {
             if v.contains_notation("code") {
-                format!("```\n")
+                "```\n".to_string()
             } else if v.contains_notation("endcode") {
                 "```".to_owned()
             } else {

@@ -204,10 +204,8 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
             Value::Text(content) => {
                 if currently_saving_paragraph {
                     paragraph_buffer.push(content);
-                } else {
-                    if content.trim() != "*" && content.trim() != "*/" && content.trim() != "**" {
-                        description.push(content);
-                    }
+                } else if content.trim() != "*" && content.trim() != "*/" && content.trim() != "**" {
+                    description.push(content);
                 }
             }
             Value::Separator => {

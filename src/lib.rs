@@ -40,7 +40,6 @@
 //!
 //! ``transform [parse_comment -> generate_ast -> generate_rustdoc]``
 
-use std::{fs};
 use crate::parser::StringType;
 
 pub mod parser;

@@ -1,5 +1,4 @@
-use std::fs;
-use doxygen_rs::{transform, transform_bindgen};
+use doxygen_rs::{transform};
 use criterion::{
     criterion_group,
     criterion_main,

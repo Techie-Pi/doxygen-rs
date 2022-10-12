@@ -23,7 +23,7 @@ fn parse_single_line(line: &str) -> Value {
     let line = clickable::make_clickable(line);
     if let Some(notation) = line.contains_any_notation() {
         let split = line.split_whitespace().collect::<Vec<&str>>();
-        Value::Notation(notation.clone(), split[1..].to_vec().join(" ").to_string())
+        Value::Notation(notation, split[1..].to_vec().join(" "))
     } else if line.is_empty() {
         Value::Separator
     } else {
