@@ -30,7 +30,7 @@ fn make_refs_clickable(input: &str) -> String {
                 apply_ref_to_next = false;
                 format!("[`{}`]", v)
             } else {
-                if v.contains_notation("ref") {
+                if v.contains_notation("ref") || v.contains_notation("sa") || v.contains_notation("see") {
                     apply_ref_to_next = true;
                     "".to_owned()
                 } else {
