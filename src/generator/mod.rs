@@ -42,6 +42,14 @@ pub fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
         rustdoc += "\n\n";
     }
 
+    if let Some(warnings) = doxygen.warnings {
+        rustdoc += "**Warning!**\n\n";
+        for warning in warnings {
+            rustdoc += format!("- {}\n", warning.0).as_str();
+        }
+        rustdoc += "\n"
+    }
+
     if let Some(returns) = doxygen.returns {
         let mut returns = returns;
         returns.get_mut(0..1).unwrap().make_ascii_uppercase();
@@ -65,13 +73,16 @@ pub fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
 
             rustdoc += "\n";
         }
+
+        rustdoc += "\n";
     }
 
     if let Some(notes) = doxygen.notes {
         rustdoc += "# Notes\n\n";
         for note in notes {
-            rustdoc += format!("- {}\n\n", note.0).as_str();
+            rustdoc += format!("- {}\n", note.0).as_str();
         }
+        rustdoc += "\n"
     }
 
     if let Some(todos) = doxygen.todos {

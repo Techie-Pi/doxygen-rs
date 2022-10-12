@@ -17,6 +17,8 @@ pub struct ParsedDoxygen {
     pub brief: Option<String>,
     /// A _description_ of the item being documented.
     pub description: Option<String>,
+    /// List of _warnings_ of the item being documented.
+    pub warnings: Option<Vec<Warning>>,
     /// List of _notes_ of the item being documented.
     pub notes: Option<Vec<Note>>,
     /// The _parameters_ of the item being documented.
@@ -52,6 +54,10 @@ pub struct Deprecated {
 /// Represents a _note_
 #[derive(Clone, Debug)]
 pub struct Note(pub String);
+
+/// Represents a _warning_
+#[derive(Clone, Debug)]
+pub struct Warning(pub String);
 
 /// The _direction_ of an argument. [Check Doxygen docs for more info](https://www.doxygen.nl/manual/commands.html#cmdparam)
 #[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
@@ -108,6 +114,7 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
     let mut brief = None;
     let mut deprecated = None;
     let mut returns = None;
+    let mut warnings = vec![];
     let mut notes = vec![];
     let mut todos = vec![];
     let mut params = vec![];
@@ -175,8 +182,10 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
                     returns = Some(content);
                 } else if notation.starts_with_notation("name") {
                     title = Some(content)
-                } else if notation.starts_with_notation("note") {
+                } else if notation.starts_with_notation("note") || notation.starts_with_notation("remark") || notation.starts_with_notation("remarks") {
                     notes.push(Note(content))
+                } else if notation.starts_with_notation("warning") {
+                    warnings.push(Warning(content))
                 } else {
                     //println!("{:?}", notation);
                 }
@@ -209,6 +218,7 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
 
     let description = if description.is_empty() { None } else { Some(description.join("\n")) };
     let todos = if todos.is_empty() { None } else { Some(todos) };
+    let warnings = if warnings.is_empty() { None } else { Some(warnings) };
     let notes = if notes.is_empty() { None } else { Some(notes) };
     let params = if params.is_empty() { None } else { Some(params) };
 
@@ -216,6 +226,7 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
         title,
         brief,
         description,
+        warnings,
         notes,
         params,
         deprecated,
