@@ -27,8 +27,8 @@ pub struct ParsedDoxygen {
     pub deprecated: Option<Deprecated>,
     /// List of _To Do_s of the item being documented.
     pub todos: Option<Vec<String>>,
-    /// Description of the value being _returned_
-    pub returns: Option<String>,
+    /// Description of the values being _returned_
+    pub returns: Option<Vec<Return>>,
 }
 
 /// Represents a single _parameter_.
@@ -58,6 +58,10 @@ pub struct Note(pub String);
 /// Represents a _warning_
 #[derive(Clone, Debug)]
 pub struct Warning(pub String);
+
+/// Represents a _return_ value
+#[derive(Clone, Debug)]
+pub struct Return(pub String);
 
 /// The _direction_ of an argument. [Check Doxygen docs for more info](https://www.doxygen.nl/manual/commands.html#cmdparam)
 #[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
@@ -113,7 +117,7 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
     let mut title = None;
     let mut brief = None;
     let mut deprecated = None;
-    let mut returns = None;
+    let mut returns = vec![];
     let mut warnings = vec![];
     let mut notes = vec![];
     let mut todos = vec![];
@@ -179,7 +183,7 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
                         description,
                     })
                 } else if notation.starts_with_notation("return") || notation.starts_with_notation("returns") {
-                    returns = Some(content);
+                    returns.push(Return(content));
                 } else if notation.starts_with_notation("name") {
                     title = Some(content)
                 } else if notation.starts_with_notation("note") || notation.starts_with_notation("remark") || notation.starts_with_notation("remarks") {
@@ -217,6 +221,7 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
     }
 
     let description = if description.is_empty() { None } else { Some(description.join("\n")) };
+    let returns = if returns.is_empty() { None } else { Some(returns) };
     let todos = if todos.is_empty() { None } else { Some(todos) };
     let warnings = if warnings.is_empty() { None } else { Some(warnings) };
     let notes = if notes.is_empty() { None } else { Some(notes) };
