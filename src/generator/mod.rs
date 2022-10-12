@@ -45,7 +45,7 @@ pub fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
     if let Some(warnings) = doxygen.warnings {
         rustdoc += "**Warning!**\n\n";
         for warning in warnings {
-            rustdoc += format!("- {}\n", warning.0).as_str();
+            rustdoc += format!("* {}\n", warning.0).as_str();
         }
         rustdoc += "\n"
     }
@@ -53,7 +53,7 @@ pub fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
     if let Some(returns) = doxygen.returns {
         rustdoc += "Returns:\n\n";
         for return_val in returns {
-            rustdoc += format!("- {}\n", return_val.0).as_str()
+            rustdoc += format!("* {}\n", return_val.0).as_str()
         }
         rustdoc += "\n";
     }
@@ -77,10 +77,18 @@ pub fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
         rustdoc += "\n";
     }
 
+    if let Some(return_values) = doxygen.return_values {
+        rustdoc += "# Return values\n";
+        for return_val in return_values {
+            rustdoc += format!("* {}\n", return_val.0).as_str();
+        }
+        rustdoc += "\n"
+    }
+
     if let Some(notes) = doxygen.notes {
         rustdoc += "# Notes\n\n";
         for note in notes {
-            rustdoc += format!("- {}\n", note.0).as_str();
+            rustdoc += format!("* {}\n", note.0).as_str();
         }
         rustdoc += "\n"
     }
