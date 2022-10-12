@@ -1,7 +1,7 @@
 use crate::utils::NotationMatching;
 
 pub fn make_clickable(input: &str) -> String {
-    make_refs_clickable(make_links_clickable(input).as_str())
+    render_code(make_refs_clickable(make_links_clickable(input).as_str()).as_str())
 }
 
 fn make_links_clickable(input: &str) -> String {
@@ -36,6 +36,22 @@ fn make_refs_clickable(input: &str) -> String {
                 } else {
                     v.to_owned()
                 }
+            }
+        })
+        .collect::<Vec<String>>()
+        .join(" ")
+}
+
+fn render_code(input: &str) -> String {
+    input
+        .split_whitespace()
+        .map(|v| {
+            if v.contains_notation("code") {
+                format!("```\n")
+            } else if v.contains_notation("endcode") {
+                "```".to_owned()
+            } else {
+                v.to_owned()
             }
         })
         .collect::<Vec<String>>()
