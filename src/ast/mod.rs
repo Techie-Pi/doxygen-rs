@@ -199,8 +199,6 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
                     warnings.push(Warning(content))
                 } else if notation.starts_with_notation("retval") {
                     return_values.push(ReturnValue(content))
-                } else {
-                    //println!("{:?}", notation);
                 }
             }
             Value::Text(content) => {
