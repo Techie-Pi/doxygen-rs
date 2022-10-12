@@ -67,6 +67,13 @@ pub fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
         }
     }
 
+    if let Some(notes) = doxygen.notes {
+        rustdoc += "# Notes\n\n";
+        for note in notes {
+            rustdoc += format!("- {}\n\n", note.0).as_str();
+        }
+    }
+
     if let Some(todos) = doxygen.todos {
         rustdoc += "# To Do\n\n";
         for todo in todos {
