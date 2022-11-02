@@ -6,8 +6,6 @@ use std::fmt::{Display, Formatter};
 use crate::parser::Value;
 use crate::utils::NotationMatching;
 
-mod unsupported;
-
 /// Represents a parsed Doxygen comment.
 #[derive(Clone, Debug)]
 pub struct ParsedDoxygen {
