@@ -18,4 +18,7 @@ With the current implementation and architecture, groups are _at least_ difficul
 Because of that, groups are completely ignored right now.
 
 ### Speed
-Benchmarks show that the time for parsing, transforming and generating the ``ctru-sys`` bindings is around 450ms
+Benchmarks show that the time for parsing, transforming and generating the ``ctru-sys`` bindings is around 680ms.
+With the following specs:
+- AMD Ryzen 5 3400G
+- 16GB RAM
