@@ -1,14 +1,38 @@
+use crate::parser::preprocessor::emojis::EMOJIS;
 // TODO: Improve preprocessor architecture
 use crate::utils::NotationMatching;
+
+mod emojis;
 
 pub fn preprocess_line(input: &str) -> String {
     render_code(
         make_italic_text(
-            make_refs_clickable(
-                make_links_clickable(input).as_str()
+            add_emojis(
+                make_refs_clickable(
+                    make_links_clickable(input).as_str()
+                ).as_str()
             ).as_str()
         ).as_str()
     )
+}
+
+fn add_emojis(input: &str) -> String {
+    let mut apply_emoji_to_next = false;
+    input
+        .split_whitespace()
+        .map(|v| {
+            if apply_emoji_to_next {
+                apply_emoji_to_next = false;
+                EMOJIS.get(v.replace(":", "").as_str()).unwrap_or(&"Unknown emoji").to_string()
+            } else if v.contains_notation("emoji") {
+                apply_emoji_to_next = true;
+                "".to_owned()
+            } else {
+                v.to_owned()
+            }
+        })
+        .collect::<Vec<String>>()
+        .join(" ")
 }
 
 fn make_italic_text(input: &str) -> String {

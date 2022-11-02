@@ -3,6 +3,9 @@ name = "doxygen-rs"
 version = "0.2.2"
 edition = "2021"
 
+[dependencies]
+phf = { version = "0.11", features = ["macros"] }
+
 [dev-dependencies]
 criterion = "0.4"
 

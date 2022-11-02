@@ -103,5 +103,11 @@ mod tests {
         let parsed = parse_comment("@brief \\a example \\\\e example 2 @em example 3");
         assert_eq!(parsed[0], Notation("@brief".to_owned(), "*example* *example* 2 *example* 3".to_owned()))
     }
+
+    #[test]
+    fn emojis_work() {
+        let parsed = parse_comment("@brief @emoji :smirk: \\emoji smirk \\\\emoji smiley");
+        assert_eq!(parsed[0], Notation("@brief".to_owned(), "😏 😏 😃".to_owned()))
+    }
 }
 
