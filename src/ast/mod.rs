@@ -224,13 +224,13 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
     }
 
     // TODO: Improve this
-    let description = if description.is_empty() { None } else { Some(description.join("\n")) };
-    let returns = if returns.is_empty() { None } else { Some(returns) };
-    let todos = if todos.is_empty() { None } else { Some(todos) };
-    let warnings = if warnings.is_empty() { None } else { Some(warnings) };
-    let notes = if notes.is_empty() { None } else { Some(notes) };
-    let params = if params.is_empty() { None } else { Some(params) };
-    let return_values = if return_values.is_empty() { None } else { Some(return_values) };
+    let description = (!description.is_empty()).then(|| description.join("\n"));
+    let returns = (!returns.is_empty()).then_some(returns);
+    let todos = (!todos.is_empty()).then_some(todos);
+    let warnings = (!warnings.is_empty()).then_some(warnings);
+    let notes = (!notes.is_empty()).then_some(notes);
+    let params = (!params.is_empty()).then_some(params);
+    let return_values = (!return_values.is_empty()).then_some(return_values);
 
     ParsedDoxygen {
         title,
