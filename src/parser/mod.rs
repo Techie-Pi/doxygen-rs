@@ -7,7 +7,7 @@ use crate::utils::NotationMatching;
 mod preprocessor;
 
 /// The enum used to represent the distinct _raw_ values of a comment
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Value {
     /// The first [`String`] is the _notation_ found, and the second [`String`] are the _contents without the notation_
     Notation(String, String),
@@ -90,11 +90,19 @@ pub fn parse_bindgen(input: &str) -> Vec<StringType> {
 #[cfg(test)]
 mod tests {
     use crate::parser::parse_comment;
+    use crate::parser::Value::Notation;
 
     #[test]
     fn test() {
         let parsed = parse_comment("@param random Random thing lmao\n\n@block This is going to be\nA block of text\nThis is crazy right??\n\nHello this is not anotated\n");
+        //println!("{:?}", parsed);
+    }
+
+    #[test]
+    fn italic_works() {
+        let parsed = parse_comment("@brief \\a example \\\\e example 2 @em example 3");
         println!("{:?}", parsed);
+        assert_eq!(parsed[0], Notation("@brief".to_owned(), "*example* *example* 2 *example* 3".to_owned()))
     }
 }
 

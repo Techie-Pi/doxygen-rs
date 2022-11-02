@@ -2,10 +2,31 @@ use crate::utils::NotationMatching;
 
 pub fn preprocess_line(input: &str) -> String {
     render_code(
-        make_refs_clickable(
-            make_links_clickable(input).as_str()
+        make_italic_text(
+            make_refs_clickable(
+                make_links_clickable(input).as_str()
+            ).as_str()
         ).as_str()
     )
+}
+
+fn make_italic_text(input: &str) -> String {
+    let mut apply_italic_to_next = false;
+    input
+        .split_whitespace()
+        .map(|v| {
+            if apply_italic_to_next {
+                apply_italic_to_next = false;
+                format!("*{}*", v)
+            } else if v.contains_notation("a") || v.contains_notation("em") || v.contains_notation("e") {
+                apply_italic_to_next = true;
+                "".to_owned()
+            } else {
+                v.to_owned()
+            }
+        })
+        .collect::<Vec<String>>()
+        .join(" ")
 }
 
 fn make_links_clickable(input: &str) -> String {
