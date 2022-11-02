@@ -4,7 +4,7 @@
 
 use crate::utils::NotationMatching;
 
-mod clickable;
+mod preprocessor;
 
 /// The enum used to represent the distinct _raw_ values of a comment
 #[derive(Debug, Clone)]
@@ -20,7 +20,7 @@ pub enum Value {
 }
 
 fn parse_single_line(line: &str) -> Value {
-    let line = clickable::make_clickable(line);
+    let line = preprocessor::preprocess_line(line);
     if let Some(notation) = line.contains_any_notation() {
         let split = line.split_whitespace().collect::<Vec<&str>>();
         Value::Notation(notation, split[1..].to_vec().join(" "))

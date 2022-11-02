@@ -1,7 +1,11 @@
 use crate::utils::NotationMatching;
 
-pub fn make_clickable(input: &str) -> String {
-    render_code(make_refs_clickable(make_links_clickable(input).as_str()).as_str())
+pub fn preprocess_line(input: &str) -> String {
+    render_code(
+        make_refs_clickable(
+            make_links_clickable(input).as_str()
+        ).as_str()
+    )
 }
 
 fn make_links_clickable(input: &str) -> String {
