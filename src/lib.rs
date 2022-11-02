@@ -89,7 +89,39 @@ mod tests {
 
     #[test]
     fn raw_transform() {
-        println!("{}", transform("@brief Creates a new dog.\n\nCreates a new Dog named `_name` with half of its maximum energy.\n\n@param _name The dog's name.\n@param[in] _test Test for In\n\n@deprecated\n\n@return a great thing"))
+        const INPUT: &str = r#"
+@brief Creates a new dog.
+
+Creates a new Dog named `_name` with half of its maximum energy.
+
+@param _name The dog's name.
+@param[in] _test Test for In
+
+@deprecated
+
+@return a great thing
+"#;
+
+        const EXPECTED: &str = r#"**Warning!** This is deprecated!
+
+Creates a new dog.
+
+Creates a new Dog named `_name` with half of its maximum energy.
+
+Returns:
+
+* a great thing
+
+# Arguments
+
+* `_name` - The dog's name.
+* `_test` - Test for In [Direction: In]
+
+"#;
+        assert_eq!(
+            EXPECTED,
+            transform(INPUT).as_str(),
+        );
     }
 
     #[test]
