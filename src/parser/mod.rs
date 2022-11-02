@@ -95,13 +95,12 @@ mod tests {
     #[test]
     fn test() {
         let parsed = parse_comment("@param random Random thing lmao\n\n@block This is going to be\nA block of text\nThis is crazy right??\n\nHello this is not anotated\n");
-        //println!("{:?}", parsed);
+        println!("{:?}", parsed);
     }
 
     #[test]
     fn italic_works() {
         let parsed = parse_comment("@brief \\a example \\\\e example 2 @em example 3");
-        println!("{:?}", parsed);
         assert_eq!(parsed[0], Notation("@brief".to_owned(), "*example* *example* 2 *example* 3".to_owned()))
     }
 }
