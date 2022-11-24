@@ -10,6 +10,20 @@ Add this to your ``Cargo.toml``
 doxygen-rs = { git = "https://github.com/Techie-Pi/doxygen-rs.git" }
 ```
 
+## Usage with Bindgen
+> Available on >=0.63 bindgen
+
+```rs
+#[derive(Debug)]
+struct Cb;
+
+impl ParseCallbacks for Cb {
+    fn process_comment(&self, comment: &str) -> Option<String> {
+        Some(doxygen_rs::transform(comment))
+    }
+}
+```
+
 ## Example
 ```rust
 use doxygen_rs::transform;
