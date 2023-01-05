@@ -7,7 +7,7 @@ Transform Doxygen to Rustdoc.
 Add this to your ``Cargo.toml``
 ```toml
 [dependencies]
-doxygen-rs = { git = "https://github.com/Techie-Pi/doxygen-rs.git" }
+doxygen-rs = "0.2"
 ```
 
 ## Usage with Bindgen
