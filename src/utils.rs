@@ -26,7 +26,7 @@ macro_rules! notation_matching {
             }
 
             fn contains_any_notation(&self) -> Option<String> {
-                if self.trim().starts_with("@") || self.trim().starts_with("\\") || self.trim().starts_with("\\\\") {
+                if self.starts_with("@") || self.starts_with("\\") || self.starts_with("\\\\") {
                     let split = self.split_whitespace().collect::<Vec<&str>>();
                     Some(split.first()?.to_string())
                 } else {

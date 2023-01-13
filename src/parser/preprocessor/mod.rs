@@ -19,7 +19,7 @@ pub fn preprocess_line(input: &str) -> String {
 fn add_emojis(input: &str) -> String {
     let mut apply_emoji_to_next = false;
     input
-        .split_whitespace()
+    .split(char::is_whitespace)
         .map(|v| {
             if apply_emoji_to_next {
                 apply_emoji_to_next = false;
@@ -38,7 +38,7 @@ fn add_emojis(input: &str) -> String {
 fn make_italic_text(input: &str) -> String {
     let mut apply_italic_to_next = false;
     input
-        .split_whitespace()
+        .split(char::is_whitespace)
         .map(|v| {
             if apply_italic_to_next {
                 apply_italic_to_next = false;
@@ -56,7 +56,7 @@ fn make_italic_text(input: &str) -> String {
 
 fn make_links_clickable(input: &str) -> String {
     input
-        .split_whitespace()
+    .split(char::is_whitespace)
         .map(|v| {
             if v.starts_with("http://") || v.starts_with("https://") {
                 let v = remove_trailing_dot_or_colon(v);
@@ -72,7 +72,7 @@ fn make_links_clickable(input: &str) -> String {
 fn make_refs_clickable(input: &str) -> String {
     let mut apply_ref_to_next = false;
     input
-        .split_whitespace()
+    .split(char::is_whitespace)
         .map(|v| {
             if apply_ref_to_next {
                 let v = remove_trailing_dot_or_colon(v);
@@ -92,7 +92,7 @@ fn make_refs_clickable(input: &str) -> String {
 
 fn render_code(input: &str) -> String {
     input
-        .split_whitespace()
+    .split(char::is_whitespace)
         .map(|v| {
             if v.contains_notation("code") {
                 "```\n".to_string()

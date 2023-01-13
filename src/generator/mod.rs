@@ -33,19 +33,21 @@ pub fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
     }
 
     if let Some(brief) = doxygen.brief {
-        rustdoc += brief.as_str();
+        rustdoc += &brief.to_string();
         rustdoc += "\n\n";
     }
 
     if let Some(description) = doxygen.description {
-        rustdoc += description.replace("< ", "").as_str();
-        rustdoc += "\n\n";
+        for desc in description {
+            rustdoc += format!("{}\n", desc).as_str();
+        }
+        rustdoc += "\n";
     }
 
     if let Some(warnings) = doxygen.warnings {
         rustdoc += "**Warning!**\n\n";
         for warning in warnings {
-            rustdoc += format!("* {}\n", warning.0).as_str();
+            rustdoc += format!("{:1}\n", warning.0).as_str();
         }
         rustdoc += "\n"
     }
@@ -53,7 +55,7 @@ pub fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
     if let Some(returns) = doxygen.returns {
         rustdoc += "Returns:\n\n";
         for return_val in returns {
-            rustdoc += format!("* {}\n", return_val.0).as_str()
+            rustdoc += format!("{:1}\n", return_val.0).as_str()
         }
         rustdoc += "\n";
     }
@@ -61,14 +63,16 @@ pub fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
     if let Some(params) = doxygen.params {
         rustdoc += "# Arguments\n\n";
         for param in params {
-            if let Some(description) = param.description {
-                rustdoc += format!("* `{}` - {}", param.arg_name, description).as_str();
-            } else {
-                rustdoc += format!("* `{}`", param.arg_name).as_str();
-            }
-
+            let mut dir=String::new();
             if let Some(direction) = param.direction {
-                rustdoc += format!(" [Direction: {}]", direction).as_str();
+                dir+=format!(" [Direction: {}] ", direction.clone()).as_str()
+            }
+            else{dir+=" "};
+
+            if let Some(description) = param.description {
+                rustdoc += format!("* `{}` -{}{:#1}", param.arg_name, dir, description).as_str();
+            } else {
+                rustdoc += format!("* `{}` -{}", param.arg_name, dir).as_str();
             }
 
             rustdoc += "\n";
@@ -80,7 +84,7 @@ pub fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
     if let Some(return_values) = doxygen.return_values {
         rustdoc += "# Return values\n";
         for return_val in return_values {
-            rustdoc += format!("* {}\n", return_val.0).as_str();
+            rustdoc += format!("{:1}\n", return_val.0).as_str();
         }
         rustdoc += "\n"
     }
@@ -88,7 +92,7 @@ pub fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
     if let Some(notes) = doxygen.notes {
         rustdoc += "# Notes\n\n";
         for note in notes {
-            rustdoc += format!("* {}\n", note.0).as_str();
+            rustdoc += format!("{:1}\n", note.0).as_str();
         }
         rustdoc += "\n"
     }
@@ -96,7 +100,7 @@ pub fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
     if let Some(todos) = doxygen.todos {
         rustdoc += "# To Do\n\n";
         for todo in todos {
-            rustdoc += format!("* {}", todo).as_str();
+            rustdoc += format!("{:1}", todo).as_str();
         }
 
         rustdoc += "\n";

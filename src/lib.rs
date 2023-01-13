@@ -84,10 +84,18 @@ mod tests {
         const INPUT: &str = r#"
 @brief Creates a new dog.
 
-Creates a new Dog named `_name` with half of its maximum energy.
+Creates a new Dog named `_name` with half
+    of its maximum
+    energy.
 
-@param _name The dog's name.
-@param[in] _test Test for In
+
+@param _name The dog's name. Ignored when:
+    - _test input null
+    - random_dog cfg option set 
+@param[in] _test Test for In,
+    also testing longer param description
+    - also param sublist
+      - and nested sublist
 
 @deprecated
 
@@ -106,8 +114,12 @@ Returns:
 
 # Arguments
 
-* `_name` - The dog's name.
-* `_test` - Test for In [Direction: In]
+* `_name` - The dog's name. Ignored when:
+  * _test input null
+  * random_dog cfg option set 
+* `_test` - [Direction: In] Test for In, also testing longer param description
+  * also param sublist
+    * and nested sublist
 
 "#;
         assert_eq!(
