@@ -95,7 +95,7 @@ pub enum Value {
     Text(NestedString),
     /// Double new-line, or any other separator
     Separator,
-    /// indented Text- probably continuation of previous line; [`String`]- line text stripped of leading whitespaces & sublist characters as '-','*'; [`usize`] - number of leading whitespaces; [`bool`]- sublist char present? 
+    /// indented Text- probably continuation of previous line; [`String`]- line text stripped of leading whitespaces & sublist characters as '-','*'and '+'; [`usize`] - number of leading whitespaces; [`bool`]- sublist char present? 
     Continuation(String, usize, bool),
     /// Unknown value
     Unknown,
@@ -108,10 +108,10 @@ fn parse_single_line(line: &str) -> Value {
     let mut sublist = false;
     for ch in line.chars()
     {
-        if ch.is_whitespace() && !sublist   { leading_whitespaces+=1; }
-        else if ch.is_whitespace()          { }//just skip whitespaces after sublist mark
-        else if ch == '-' || ch == '*'      { sublist = true; }
-        else                                { break; };
+        if ch.is_whitespace() && !sublist           { leading_whitespaces+=1; }
+        else if ch.is_whitespace()                  { }//just skip whitespaces after sublist mark
+        else if ch == '-' || ch == '*' || ch == '+' { sublist = true; }
+        else                                        { break; };
         chars_to_skip+=1;
     }
     line.drain(..chars_to_skip);
