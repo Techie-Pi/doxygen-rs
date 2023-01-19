@@ -2,9 +2,9 @@
 //!
 //! **The functions and structs here should _not_ be considered stable**
 
-use std::fmt::{Display, Formatter};
-use crate::parser::{Value, NestedString};
+use crate::parser::{NestedString, Value};
 use crate::utils::NotationMatching;
+use std::fmt::{Display, Formatter};
 
 /// Represents a parsed Doxygen comment.
 #[derive(Clone, Debug)]
@@ -141,7 +141,11 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
                 } else if notation.starts_with_notation("deprecated") {
                     deprecated = Some(Deprecated {
                         is_deprecated: true,
-                        message: if content.top.is_empty() { None } else { Some(content) },
+                        message: if content.top.is_empty() {
+                            None
+                        } else {
+                            Some(content)
+                        },
                     });
                 } else if notation.starts_with_notation("details") {
                     currently_saving_paragraph = true;
@@ -160,7 +164,9 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
                             Some(Direction::In)
                         } else if raw_direction.starts_with("[out]") {
                             Some(Direction::Out)
-                        } else if raw_direction.starts_with("[in,out]") || raw_direction.starts_with("[out,in]") {
+                        } else if raw_direction.starts_with("[in,out]")
+                            || raw_direction.starts_with("[out,in]")
+                        {
                             Some(Direction::InOut)
                         } else {
                             None
@@ -168,7 +174,11 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
                     };
 
                     let arg_name = {
-                        let split = content.top.split_whitespace().map(|v| v.to_string()).collect::<Vec<String>>();
+                        let split = content
+                            .top
+                            .split_whitespace()
+                            .map(|v| v.to_string())
+                            .collect::<Vec<String>>();
                         split.first().unwrap().to_owned()
                     };
 
@@ -187,11 +197,16 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
                         direction,
                         description,
                     })
-                } else if notation.starts_with_notation("return") || notation.starts_with_notation("returns") {
+                } else if notation.starts_with_notation("return")
+                    || notation.starts_with_notation("returns")
+                {
                     returns.push(Return(content));
                 } else if notation.starts_with_notation("name") {
                     title = Some(content)
-                } else if notation.starts_with_notation("note") || notation.starts_with_notation("remark") || notation.starts_with_notation("remarks") {
+                } else if notation.starts_with_notation("note")
+                    || notation.starts_with_notation("remark")
+                    || notation.starts_with_notation("remarks")
+                {
                     notes.push(Note(content))
                 } else if notation.starts_with_notation("warning") {
                     warnings.push(Warning(content))
@@ -202,7 +217,10 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
             Value::Text(content) => {
                 if currently_saving_paragraph {
                     paragraph_buffer.push(content);
-                } else if content.to_string().trim() != "*" && content.to_string().trim() != "*/" && content.to_string().trim() != "**" {
+                } else if content.to_string().trim() != "*"
+                    && content.to_string().trim() != "*/"
+                    && content.to_string().trim() != "**"
+                {
                     description.push(content);
                 }
             }
@@ -210,7 +228,9 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
                 if currently_saving_paragraph {
                     if let Some(move_buffer_to) = move_buffer_to.clone() {
                         match move_buffer_to {
-                            MoveBufferTo::Description => description.append(&mut paragraph_buffer.clone()),
+                            MoveBufferTo::Description => {
+                                description.append(&mut paragraph_buffer.clone())
+                            }
                             MoveBufferTo::ToDo => todos.append(&mut paragraph_buffer.clone()),
                         }
                     }
@@ -220,7 +240,7 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
                 }
             }
             Value::Unknown => {}
-            Value::Continuation(_, _, _) => unreachable!(),//only for parser internal use 
+            Value::Continuation(_, _, _) => unreachable!(), //only for parser internal use
         }
     }
 
@@ -249,23 +269,31 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser;
     use super::*;
+    use crate::parser;
 
     #[test]
     fn parses_param() {
-        let doxygen = generate_ast(parser::parse_comment("@param random Random thing lmao\n@param[in] goes_in This goes in lmao"));
+        let doxygen = generate_ast(parser::parse_comment(
+            "@param random Random thing lmao\n@param[in] goes_in This goes in lmao",
+        ));
 
         let first_param = doxygen.params.as_ref().unwrap();
         let first_param = first_param.get(0).unwrap();
         assert_eq!(first_param.arg_name, "random");
-        assert_eq!(first_param.description, Some(NestedString::new("Random thing lmao".to_string())));
+        assert_eq!(
+            first_param.description,
+            Some(NestedString::new("Random thing lmao".to_string()))
+        );
         assert_eq!(first_param.direction, None);
 
         let second_param = doxygen.params.as_ref().unwrap();
         let second_param = second_param.get(1).unwrap();
         assert_eq!(second_param.arg_name, "goes_in");
-        assert_eq!(second_param.description, Some(NestedString::new("This goes in lmao".to_string())));
+        assert_eq!(
+            second_param.description,
+            Some(NestedString::new("This goes in lmao".to_string()))
+        );
         assert_eq!(second_param.direction, Some(Direction::In));
     }
 
@@ -273,14 +301,24 @@ mod tests {
     fn parses_brief() {
         let doxygen = generate_ast(parser::parse_comment("@brief This function does things"));
 
-        assert_eq!(doxygen.brief, Some(NestedString::new("This function does things".to_string())));
+        assert_eq!(
+            doxygen.brief,
+            Some(NestedString::new("This function does things".to_string()))
+        );
     }
 
     #[test]
     fn parses_description() {
         let doxygen = generate_ast(parser::parse_comment("@brief This is a function\n\nThis is the description of the thing.\nYou should do things with this function.\nOr not, I don't really care."));
 
-        assert_eq!(doxygen.description, Some(vec![NestedString::new("This is the description of the thing.".to_string()), NestedString::new("You should do things with this function.".to_string()),NestedString::new("Or not, I don't really care.".to_string())]))
+        assert_eq!(
+            doxygen.description,
+            Some(vec![
+                NestedString::new("This is the description of the thing.".to_string()),
+                NestedString::new("You should do things with this function.".to_string()),
+                NestedString::new("Or not, I don't really care.".to_string())
+            ])
+        )
     }
     #[test]
     fn parses_multiline_simple() {
@@ -292,37 +330,52 @@ mod tests {
     fn parses_multiline_sublist() {
         let doxygen = generate_ast(parser::parse_comment("@brief This is a function\n\nThis is the description of the thing.\n    - You should do things with this function.\n    - Or not, I don't really care."));
 
-        assert_eq!(doxygen.description, Some(
-            vec![
-                NestedString{
-                    top:"This is the description of the thing.".to_string(),
-                    sub: vec![
-                        NestedString::new("You should do things with this function.".to_string()),
-                        NestedString::new("Or not, I don't really care.".to_string())]}]))
+        assert_eq!(
+            doxygen.description,
+            Some(vec![NestedString {
+                top: "This is the description of the thing.".to_string(),
+                sub: vec![
+                    NestedString::new("You should do things with this function.".to_string()),
+                    NestedString::new("Or not, I don't really care.".to_string())
+                ]
+            }])
+        )
     }
     #[test]
     fn parses_multiline_sublist_complex() {
         let doxygen = generate_ast(parser::parse_comment("@brief This is a function\n\nThis is the description of the thing.\n    - You should do things with:\n      - this function.\n      - that function.\n        (with long description)\n    - Or not, I don't really care."));
 
-        assert_eq!(doxygen.description, Some(
-            vec![
-                NestedString{
-                    top:"This is the description of the thing.".to_string(),
-                    sub: vec![
-                        NestedString{
-                            top:"You should do things with:".to_string(),
-                            sub: vec![
-                                NestedString::new("this function.".to_string()),
-                                NestedString::new("that function. (with long description)".to_string())]},
-                        NestedString::new("Or not, I don't really care.".to_string())]}]));
+        assert_eq!(
+            doxygen.description,
+            Some(vec![NestedString {
+                top: "This is the description of the thing.".to_string(),
+                sub: vec![
+                    NestedString {
+                        top: "You should do things with:".to_string(),
+                        sub: vec![
+                            NestedString::new("this function.".to_string()),
+                            NestedString::new("that function. (with long description)".to_string())
+                        ]
+                    },
+                    NestedString::new("Or not, I don't really care.".to_string())
+                ]
+            }])
+        );
     }
     #[test]
     fn parses_deprecated() {
-        let doxygen = generate_ast(parser::parse_comment("@deprecated This function is pure spaghetti lmao\n\n@brief Creates a single spaghetti"));
+        let doxygen = generate_ast(parser::parse_comment(
+            "@deprecated This function is pure spaghetti lmao\n\n@brief Creates a single spaghetti",
+        ));
 
         let deprecated = doxygen.deprecated.unwrap();
         assert_eq!(deprecated.is_deprecated, true);
-        assert_eq!(deprecated.message, Some(NestedString::new("This function is pure spaghetti lmao".to_string())));
+        assert_eq!(
+            deprecated.message,
+            Some(NestedString::new(
+                "This function is pure spaghetti lmao".to_string()
+            ))
+        );
     }
 
     #[test]
@@ -330,15 +383,26 @@ mod tests {
         let doxygen = generate_ast(parser::parse_comment("@brief This does things\n\n@details This does _advanced_ things\nAnd the _advanced_ things are not easy"));
 
         let description = doxygen.description.unwrap();
-        assert_eq!(description, vec![NestedString::new("This does _advanced_ things".to_string()), NestedString::new("And the _advanced_ things are not easy".to_string())]);
+        assert_eq!(
+            description,
+            vec![
+                NestedString::new("This does _advanced_ things".to_string()),
+                NestedString::new("And the _advanced_ things are not easy".to_string())
+            ]
+        );
     }
 
     #[test]
     fn parses_todo() {
-        let doxygen = generate_ast(parser::parse_comment("@brief This is WIP\n\n@todo Fix the bug where the C: drive is deleted"));
+        let doxygen = generate_ast(parser::parse_comment(
+            "@brief This is WIP\n\n@todo Fix the bug where the C: drive is deleted",
+        ));
 
         let todos = doxygen.todos.unwrap();
-        assert_eq!(todos.get(0).unwrap().clone(), NestedString::new("Fix the bug where the C: drive is deleted".to_string()));
+        assert_eq!(
+            todos.get(0).unwrap().clone(),
+            NestedString::new("Fix the bug where the C: drive is deleted".to_string())
+        );
     }
 
     #[test]
@@ -347,10 +411,21 @@ mod tests {
 
         let first_param = doxygen.params.unwrap();
         let first_param = first_param.first().unwrap();
-        assert_eq!(doxygen.brief, Some(NestedString::new("Creates a new dog.".to_string())));
-        assert_eq!(doxygen.description, Some(vec![NestedString::new("Creates a new Dog named `_name` with half of its maximum energy.".to_string())]));
+        assert_eq!(
+            doxygen.brief,
+            Some(NestedString::new("Creates a new dog.".to_string()))
+        );
+        assert_eq!(
+            doxygen.description,
+            Some(vec![NestedString::new(
+                "Creates a new Dog named `_name` with half of its maximum energy.".to_string()
+            )])
+        );
         assert_eq!(first_param.arg_name, "_name".to_string());
-        assert_eq!(first_param.description, Some(NestedString::new("The dog's name.".to_string())));
+        assert_eq!(
+            first_param.description,
+            Some(NestedString::new("The dog's name.".to_string()))
+        );
         assert_eq!(first_param.direction, None);
     }
 }

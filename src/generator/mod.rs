@@ -63,11 +63,12 @@ pub fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
     if let Some(params) = doxygen.params {
         rustdoc += "# Arguments\n\n";
         for param in params {
-            let mut dir=String::new();
+            let mut dir = String::new();
             if let Some(direction) = param.direction {
-                dir+=format!(" [Direction: {}] ", direction.clone()).as_str()
-            }
-            else{dir+=" "};
+                dir += format!(" [Direction: {}] ", direction.clone()).as_str()
+            } else {
+                dir += " "
+            };
 
             if let Some(description) = param.description {
                 rustdoc += format!("* `{}` -{}{:#1}", param.arg_name, dir, description).as_str();

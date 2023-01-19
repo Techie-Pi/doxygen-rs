@@ -1,4 +1,4 @@
-use phf::{phf_map};
+use phf::phf_map;
 
 // Source: https://gist.github.com/rxaviers/7360908 from https://doxygen.nl/manual/commands.html#cmdemoji
 pub(crate) static EMOJIS: phf::Map<&'static str, &'static str> = phf_map! {

@@ -10,15 +10,21 @@ macro_rules! notation_matching {
     ($t:ty) => {
         impl NotationMatching for $t {
             fn starts_with_notation(&self, notation: &str) -> bool {
-                self.starts_with(format!("@{}", notation).as_str()) || self.starts_with(format!("\\{}", notation).as_str()) || self.starts_with(format!("\\\\{}", notation).as_str())
+                self.starts_with(format!("@{}", notation).as_str())
+                    || self.starts_with(format!("\\{}", notation).as_str())
+                    || self.starts_with(format!("\\\\{}", notation).as_str())
             }
 
             fn replace_notation(&self, notation: &str, to: &str) -> String {
-                self.replace(format!("@{}", notation).as_str(), to).replace(format!("\\{}", notation).as_str(), to).replace(format!("\\\\{}", notation).as_str(), to)
+                self.replace(format!("@{}", notation).as_str(), to)
+                    .replace(format!("\\{}", notation).as_str(), to)
+                    .replace(format!("\\\\{}", notation).as_str(), to)
             }
 
             fn contains_notation(&self, notation: &str) -> bool {
-                self.contains(format!("@{}", notation).as_str()) || self.contains(format!("\\{}", notation).as_str()) || self.contains(format!("\\\\{}", notation).as_str())
+                self.contains(format!("@{}", notation).as_str())
+                    || self.contains(format!("\\{}", notation).as_str())
+                    || self.contains(format!("\\\\{}", notation).as_str())
             }
 
             fn remove_notation(&self, notation: &str) -> String {
@@ -34,7 +40,7 @@ macro_rules! notation_matching {
                 }
             }
         }
-    }
+    };
 }
 
 notation_matching!(&str);
