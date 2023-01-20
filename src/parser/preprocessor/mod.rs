@@ -7,23 +7,23 @@ mod emojis;
 pub fn preprocess_line(input: &str) -> String {
     render_code(
         make_italic_text(
-            add_emojis(
-                make_refs_clickable(
-                    make_links_clickable(input).as_str()
-                ).as_str()
-            ).as_str()
-        ).as_str()
+            add_emojis(make_refs_clickable(make_links_clickable(input).as_str()).as_str()).as_str(),
+        )
+        .as_str(),
     )
 }
 
 fn add_emojis(input: &str) -> String {
     let mut apply_emoji_to_next = false;
     input
-        .split_whitespace()
+        .split(char::is_whitespace)
         .map(|v| {
             if apply_emoji_to_next {
                 apply_emoji_to_next = false;
-                EMOJIS.get(v.replace(":", "").as_str()).unwrap_or(&"Unknown emoji").to_string()
+                EMOJIS
+                    .get(v.replace(":", "").as_str())
+                    .unwrap_or(&"Unknown emoji")
+                    .to_string()
             } else if v.contains_notation("emoji") {
                 apply_emoji_to_next = true;
                 "".to_owned()
@@ -38,12 +38,15 @@ fn add_emojis(input: &str) -> String {
 fn make_italic_text(input: &str) -> String {
     let mut apply_italic_to_next = false;
     input
-        .split_whitespace()
+        .split(char::is_whitespace)
         .map(|v| {
             if apply_italic_to_next {
                 apply_italic_to_next = false;
                 format!("*{}*", v)
-            } else if v.contains_notation("a") || v.contains_notation("em") || v.contains_notation("e") {
+            } else if v.contains_notation("a")
+                || v.contains_notation("em")
+                || v.contains_notation("e")
+            {
                 apply_italic_to_next = true;
                 "".to_owned()
             } else {
@@ -56,7 +59,7 @@ fn make_italic_text(input: &str) -> String {
 
 fn make_links_clickable(input: &str) -> String {
     input
-        .split_whitespace()
+        .split(char::is_whitespace)
         .map(|v| {
             if v.starts_with("http://") || v.starts_with("https://") {
                 let v = remove_trailing_dot_or_colon(v);
@@ -72,14 +75,17 @@ fn make_links_clickable(input: &str) -> String {
 fn make_refs_clickable(input: &str) -> String {
     let mut apply_ref_to_next = false;
     input
-        .split_whitespace()
+        .split(char::is_whitespace)
         .map(|v| {
             if apply_ref_to_next {
                 let v = remove_trailing_dot_or_colon(v);
 
                 apply_ref_to_next = false;
                 format!("[`{}`]", v)
-            } else if v.contains_notation("ref") || v.contains_notation("sa") || v.contains_notation("see") {
+            } else if v.contains_notation("ref")
+                || v.contains_notation("sa")
+                || v.contains_notation("see")
+            {
                 apply_ref_to_next = true;
                 "".to_owned()
             } else {
@@ -92,7 +98,7 @@ fn make_refs_clickable(input: &str) -> String {
 
 fn render_code(input: &str) -> String {
     input
-        .split_whitespace()
+        .split(char::is_whitespace)
         .map(|v| {
             if v.contains_notation("code") {
                 "```\n".to_string()

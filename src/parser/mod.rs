@@ -2,32 +2,141 @@
 //!
 //! **The functions and structs here should _not_ be considered stable**
 
+use std::fmt::Display;
+
 use crate::utils::NotationMatching;
 
 mod preprocessor;
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct NestedString {
+    pub top: String,
+    pub sub: Vec<NestedString>,
+}
+impl Default for NestedString {
+    fn default() -> Self {
+        Self {
+            top: Default::default(),
+            sub: Default::default(),
+        }
+    }
+}
+impl NestedString {
+    pub fn new(top: String) -> Self {
+        Self { top, sub: vec![] }
+    }
 
+    pub fn to_string(&self) -> String {
+        format!("{}", self)
+    }
+
+    pub fn modify_sub(mut self, nesting_depth: usize, sublist: bool, line: String) -> NestedString {
+        let mut refs_vec = vec![self];
+        for _ in 1..nesting_depth {
+            let mut high = refs_vec.pop().unwrap(); //unwrap will not panic, couse refs_vec has initial len>0 and then len is inreasing
+            let low = high.sub.pop();
+            refs_vec.push(high); //return to ref_vec what we has taken in this iteration(stripped of last element of sub)
+            if let Some(low) = low {
+                refs_vec.push(low); //add to ref_vec last element of sub
+            } else {
+                refs_vec.push(NestedString::default());
+            }
+        }
+        if sublist {
+            refs_vec
+                .last_mut()
+                .unwrap()
+                .sub
+                .push(NestedString::new(line));
+        } else {
+            refs_vec.last_mut().unwrap().top.push(' ');
+            refs_vec.last_mut().unwrap().top.push_str(line.as_str());
+        }
+
+        for _ in 1..nesting_depth {
+            let last = refs_vec.pop().unwrap();
+            refs_vec.last_mut().unwrap().sub.push(last);
+        }
+        self = refs_vec.swap_remove(0);
+        self
+    }
+}
+impl Display for NestedString {
+    /// usable formating options:
+    /// :{width} - NestedString.top intendation/sublist depth, NestedString.sub is one sublist level deeper
+    /// :# - NestedString.top is at 0 sublist depth(no sublist at all), but NestedString.sub is on sublist level width+1
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut line_prefix = String::new();
+        let width = formatter.width().unwrap_or(0);
+        if !(width == 0 || formatter.alternate()) {
+            line_prefix += format!("{:>width$}", "* ", width = 2 * width).as_str();
+            //set elements initial depth in list
+        }
+
+        // if self.sub.is_empty()
+        {
+            write!(formatter, "{}{}", line_prefix, self.top)?;
+        }
+        // else                    { write!(formatter, "{}{}\n", line_prefix, self.top); }
+
+        if self.sub.len() != 0 {
+            // for (ns, last_elem) in self.sub.iter().enumerate()
+            // .map(|(i, w)| (w, i == self.sub.len() - 1))
+            // {
+            //     if last_elem    { write!(formatter, "{:width$}", ns, width=width+1); }
+            //     else            { write!(formatter, "{:width$}\n", ns, width=width+1); }
+            // }
+            for ns in self.sub.iter() {
+                write!(formatter, "\n{:width$}", ns, width = width + 1)?;
+            }
+        }
+        write!(formatter, "")
+    }
+}
 /// The enum used to represent the distinct _raw_ values of a comment
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Value {
-    /// The first [`String`] is the _notation_ found, and the second [`String`] are the _contents without the notation_
-    Notation(String, String),
+    /// The first [`String`] is the _notation_ found, and .top of [`NestedString`] are the _contents without the notation_; the .sub of [`NestedString`] is a vector that contains consecutive list (lines starting with "-")
+    Notation(String, NestedString),
     /// Raw text, without notation
-    Text(String),
+    Text(NestedString),
     /// Double new-line, or any other separator
     Separator,
+    /// indented Text- probably continuation of previous line; [`String`]- line text stripped of leading whitespaces & sublist characters as '-','*'and '+'; [`usize`] - number of leading whitespaces; [`bool`]- sublist char present?
+    Continuation(String, usize, bool),
     /// Unknown value
     Unknown,
 }
 
 fn parse_single_line(line: &str) -> Value {
-    let line = preprocessor::preprocess_line(line);
+    let mut line = preprocessor::preprocess_line(line);
+    let mut leading_whitespaces = 0;
+    let mut chars_to_skip = 0;
+    let mut sublist = false;
+    for ch in line.chars() {
+        if ch.is_whitespace() {
+            leading_whitespaces += 1;
+        } else if ch == '-' || ch == '*' || ch == '+' {
+            sublist = true;
+            chars_to_skip = leading_whitespaces + 1;
+            break;
+        } else {
+            chars_to_skip = leading_whitespaces;
+            break;
+        };
+    }
+    line.drain(..chars_to_skip); //remove leading whitespaces and sublist mark
+    line = line.trim_start().to_string(); //remove leading whitespaces after sublist mark
     if let Some(notation) = line.contains_any_notation() {
         let split = line.split_whitespace().collect::<Vec<&str>>();
-        Value::Notation(notation, split[1..].to_vec().join(" "))
+        Value::Notation(notation, NestedString::new(split[1..].to_vec().join(" ")))
     } else if line.is_empty() {
         Value::Separator
     } else {
-        Value::Text(line)
+        if leading_whitespaces > 0 {
+            Value::Continuation(line, leading_whitespaces, sublist)
+        } else {
+            Value::Text(NestedString::new(line))
+        }
     }
 }
 
@@ -40,8 +149,13 @@ fn parse_single_line(line: &str) -> Value {
 /// let parsed = parse_comment("@brief Random function");
 /// ```
 pub fn parse_comment(input: &str) -> Vec<Value> {
-    let lines = input.split('\n').map(|v| v.to_string()).collect::<Vec<String>>();
+    let lines = input
+        .split('\n')
+        .map(|v| v.to_string())
+        .collect::<Vec<String>>();
     let mut values = vec![];
+    let mut nesting_depth = 0;
+    let mut nesting_spaces = vec![0];
 
     for line in lines {
         let value = if line.trim().starts_with("* ") {
@@ -49,8 +163,51 @@ pub fn parse_comment(input: &str) -> Vec<Value> {
         } else {
             parse_single_line(line.as_str())
         };
-
-        values.push(value);
+        if let Value::Continuation(line, leading_whitespaces, sublist) = value {
+            for nd in (0..=nesting_depth).rev() {
+                //asume that sublist level takes at least two whitespaces, and single whitespace is a typo
+                if leading_whitespaces >= nesting_spaces[nd] + 2 {
+                    //sublist level has increased
+                    nesting_depth += 1;
+                    nesting_spaces.push(leading_whitespaces);
+                    break;
+                } else if leading_whitespaces + 2 <= nesting_spaces[nd] {
+                    //sublist level has decreased
+                    nesting_depth -= 1;
+                    nesting_spaces.pop();
+                    continue;
+                } else {
+                    break;
+                }
+            }
+            match values.pop() {
+                Some(Value::Notation(notation, mut values_depths)) => {
+                    values_depths = values_depths.modify_sub(nesting_depth, sublist, line);
+                    values.push(Value::Notation(notation.clone(), values_depths));
+                }
+                Some(Value::Text(mut values_depths)) => {
+                    values_depths = values_depths.modify_sub(nesting_depth, sublist, line);
+                    values.push(Value::Text(values_depths));
+                }
+                None => {
+                    //we shouldn't(?) be here (None means that this is first line, so it can not be continuation)
+                    values.push(Value::Text(NestedString::new(line)));
+                    nesting_depth = 0;
+                    nesting_spaces = vec![0];
+                }
+                Some(v) => {
+                    //we shouldn't(?) be here
+                    values.push(v);
+                    values.push(Value::Text(NestedString::new(line)));
+                    nesting_depth = 0;
+                    nesting_spaces = vec![0];
+                }
+            }
+        } else {
+            values.push(value);
+            nesting_depth = 0;
+            nesting_spaces = vec![0];
+        }
     }
     values.push(Value::Separator);
 
@@ -68,7 +225,10 @@ pub enum StringType {
 
 /// Generate a [`Vec`] of [`StringType`] from a given [`&str`], assuming it's a _raw_ bindgen file
 pub fn parse_bindgen(input: &str) -> Vec<StringType> {
-    let lines: Vec<String> = input.split('\n').map(|v| v.to_string()).collect::<Vec<String>>();
+    let lines: Vec<String> = input
+        .split('\n')
+        .map(|v| v.to_string())
+        .collect::<Vec<String>>();
     let mut strings = vec![];
 
     let mut comment_buffer = vec![];
@@ -77,7 +237,9 @@ pub fn parse_bindgen(input: &str) -> Vec<StringType> {
             comment_buffer.push(line.replace("#[doc = \"", "").replace("\"]", ""));
         } else {
             if !comment_buffer.is_empty() {
-                strings.push(StringType::Parsed(parse_comment(comment_buffer.join("\n").as_str())));
+                strings.push(StringType::Parsed(parse_comment(
+                    comment_buffer.join("\n").as_str(),
+                )));
                 comment_buffer = vec![];
             }
             strings.push(StringType::Raw(line));
@@ -90,6 +252,7 @@ pub fn parse_bindgen(input: &str) -> Vec<StringType> {
 #[cfg(test)]
 mod tests {
     use crate::parser::parse_comment;
+    use crate::parser::NestedString;
     use crate::parser::Value::Notation;
 
     #[test]
@@ -101,13 +264,30 @@ mod tests {
     #[test]
     fn italic_works() {
         let parsed = parse_comment("@brief \\a example \\\\e example 2 @em example 3");
-        assert_eq!(parsed[0], Notation("@brief".to_owned(), "*example* *example* 2 *example* 3".to_owned()))
+        assert_eq!(
+            parsed[0],
+            Notation(
+                "@brief".to_owned(),
+                NestedString {
+                    top: "*example* *example* 2 *example* 3".to_owned(),
+                    sub: vec![]
+                }
+            )
+        )
     }
 
     #[test]
     fn emojis_work() {
         let parsed = parse_comment("@brief @emoji :smirk: \\emoji smirk \\\\emoji smiley");
-        assert_eq!(parsed[0], Notation("@brief".to_owned(), "😏 😏 😃".to_owned()))
+        assert_eq!(
+            parsed[0],
+            Notation(
+                "@brief".to_owned(),
+                NestedString {
+                    top: "😏 😏 😃".to_owned(),
+                    sub: vec![]
+                }
+            )
+        )
     }
 }
-

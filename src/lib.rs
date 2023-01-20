@@ -34,9 +34,9 @@
 
 use crate::parser::StringType;
 
-pub mod parser;
 pub mod ast;
 pub mod generator;
+pub mod parser;
 mod utils;
 
 /// Transforms raw Doxygen comments to raw Rustdoc comments
@@ -64,9 +64,12 @@ pub fn transform_bindgen(input: &str) -> String {
             StringType::Parsed(data) => {
                 let ast = ast::generate_ast(data);
                 let rustdoc = generator::generate_rustdoc(ast);
-                let bindgen_doc = rustdoc.lines().map(|v| format!("#[doc = \"{}\"]\n", v.trim())).collect::<String>();
+                let bindgen_doc = rustdoc
+                    .lines()
+                    .map(|v| format!("#[doc = \"{}\"]\n", v.trim()))
+                    .collect::<String>();
                 file_data.push(bindgen_doc);
-            },
+            }
             StringType::Raw(raw) => file_data.push(raw),
         }
     }
@@ -84,10 +87,18 @@ mod tests {
         const INPUT: &str = r#"
 @brief Creates a new dog.
 
-Creates a new Dog named `_name` with half of its maximum energy.
+Creates a new Dog named `_name` with half
+    of its maximum
+    energy.
 
-@param _name The dog's name.
-@param[in] _test Test for In
+
+@param _name The dog's name. Ignored when:
+    - _test input null
+    - random_dog cfg option set 
+@param[in] _test Test for In,
+    also testing longer param description
+    - also param sublist
+      - and nested sublist
 
 @deprecated
 
@@ -106,14 +117,15 @@ Returns:
 
 # Arguments
 
-* `_name` - The dog's name.
-* `_test` - Test for In [Direction: In]
+* `_name` - The dog's name. Ignored when:
+  * _test input null
+  * random_dog cfg option set 
+* `_test` - [Direction: In] Test for In, also testing longer param description
+  * also param sublist
+    * and nested sublist
 
 "#;
-        assert_eq!(
-            EXPECTED,
-            transform(INPUT).as_str(),
-        );
+        assert_eq!(EXPECTED, transform(INPUT).as_str(),);
     }
 
     #[test]
