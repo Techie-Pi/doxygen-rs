@@ -113,19 +113,19 @@ fn parse_single_line(line: &str) -> Value {
     let mut chars_to_skip = 0;
     let mut sublist = false;
     for ch in line.chars() {
-        if ch.is_whitespace() && !sublist {
+        if ch.is_whitespace() {
             leading_whitespaces += 1;
-        } else if ch.is_whitespace() {
-        }
-        //just skip whitespaces after sublist mark
-        else if ch == '-' || ch == '*' || ch == '+' {
+        } else if ch == '-' || ch == '*' || ch == '+' {
             sublist = true;
+            chars_to_skip = leading_whitespaces + 1;
+            break;
         } else {
+            chars_to_skip = leading_whitespaces;
             break;
         };
-        chars_to_skip += 1;
     }
-    line.drain(..chars_to_skip);
+    line.drain(..chars_to_skip); //remove leading whitespaces and sublist mark
+    line = line.trim_start().to_string(); //remove leading whitespaces after sublist mark
     if let Some(notation) = line.contains_any_notation() {
         let split = line.split_whitespace().collect::<Vec<&str>>();
         Value::Notation(notation, NestedString::new(split[1..].to_vec().join(" ")))
