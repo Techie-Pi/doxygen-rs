@@ -39,7 +39,7 @@ pub fn generate_rustdoc(doxygen: ParsedDoxygen) -> String {
 
     if let Some(description) = doxygen.description {
         for desc in description {
-            rustdoc += format!("{}\n", desc).as_str();
+            rustdoc += format!("{}\n", desc).replace("< ", "").as_str();
         }
         rustdoc += "\n";
     }
