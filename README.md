@@ -7,7 +7,7 @@ Transform Doxygen to Rustdoc.
 Add this to your ``Cargo.toml``
 ```toml
 [dependencies]
-doxygen-rs = "0.2"
+doxygen-rs = "0.3"
 ```
 
 ## Usage with Bindgen
