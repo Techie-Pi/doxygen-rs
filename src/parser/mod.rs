@@ -8,18 +8,12 @@ use crate::utils::NotationMatching;
 
 mod preprocessor;
 #[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Default)]
 pub struct NestedString {
     pub top: String,
     pub sub: Vec<NestedString>,
 }
-impl Default for NestedString {
-    fn default() -> Self {
-        Self {
-            top: Default::default(),
-            sub: Default::default(),
-        }
-    }
-}
+
 
 impl NestedString {
     pub fn new(top: String) -> Self {
@@ -73,7 +67,7 @@ impl Display for NestedString {
             write!(formatter, "{}{}", line_prefix, self.top)?;
         }
 
-        if self.sub.len() != 0 {
+        if !self.sub.is_empty() {
             for ns in self.sub.iter() {
                 write!(formatter, "\n{:width$}", ns, width = width + 1)?;
             }
@@ -121,12 +115,10 @@ fn parse_single_line(line: &str) -> Value {
         Value::Notation(notation, NestedString::new(split[1..].to_vec().join(" ")))
     } else if line.is_empty() {
         Value::Separator
+    } else if leading_whitespaces > 0 {
+        Value::Continuation(line, leading_whitespaces, sublist)
     } else {
-        if leading_whitespaces > 0 {
-            Value::Continuation(line, leading_whitespaces, sublist)
-        } else {
-            Value::Text(NestedString::new(line))
-        }
+        Value::Text(NestedString::new(line))
     }
 }
 

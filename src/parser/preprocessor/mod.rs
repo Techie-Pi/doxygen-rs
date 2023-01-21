@@ -21,7 +21,7 @@ fn add_emojis(input: &str) -> String {
             if apply_emoji_to_next {
                 apply_emoji_to_next = false;
                 EMOJIS
-                    .get(v.replace(":", "").as_str())
+                    .get(v.replace(':', "").as_str())
                     .unwrap_or(&"Unknown emoji")
                     .to_string()
             } else if v.contains_notation("emoji") {
