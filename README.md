@@ -1,7 +1,7 @@
 # doxygen-rs
 Transform Doxygen to Rustdoc.
 
-[**Docs available here**](https://techie-pi.github.io/doxygen-rs/doxygen_rs/) _Though somewhat outdated ;p_
+[**Docs available here**](https://docs.rs/doxygen-rs/latest/doxygen_rs/)
 
 ## Installation
 Add this to your ``Cargo.toml``
