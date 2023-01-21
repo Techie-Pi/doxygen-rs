@@ -240,7 +240,7 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
                 }
             }
             Value::Unknown => {}
-            Value::Continuation(_, _, _) => unreachable!(), //only for parser internal use
+            Value::Continuation(_, _, _) => unreachable!(), // Parser internal user
         }
     }
 

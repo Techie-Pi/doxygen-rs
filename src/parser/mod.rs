@@ -20,23 +20,20 @@ impl Default for NestedString {
         }
     }
 }
+
 impl NestedString {
     pub fn new(top: String) -> Self {
         Self { top, sub: vec![] }
     }
 
-    pub fn to_string(&self) -> String {
-        format!("{}", self)
-    }
-
     pub fn modify_sub(mut self, nesting_depth: usize, sublist: bool, line: String) -> NestedString {
         let mut refs_vec = vec![self];
         for _ in 1..nesting_depth {
-            let mut high = refs_vec.pop().unwrap(); //unwrap will not panic, couse refs_vec has initial len>0 and then len is inreasing
+            let mut high = refs_vec.pop().unwrap(); // Unwrap won't panic, because `refs_vec` has initial len > 0
             let low = high.sub.pop();
-            refs_vec.push(high); //return to ref_vec what we has taken in this iteration(stripped of last element of sub)
+            refs_vec.push(high);
             if let Some(low) = low {
-                refs_vec.push(low); //add to ref_vec last element of sub
+                refs_vec.push(low);
             } else {
                 refs_vec.push(NestedString::default());
             }
@@ -69,22 +66,14 @@ impl Display for NestedString {
         let width = formatter.width().unwrap_or(0);
         if !(width == 0 || formatter.alternate()) {
             line_prefix += format!("{:>width$}", "* ", width = 2 * width).as_str();
-            //set elements initial depth in list
+            // Set element's initial depth in list
         }
 
-        // if self.sub.is_empty()
         {
             write!(formatter, "{}{}", line_prefix, self.top)?;
         }
-        // else                    { write!(formatter, "{}{}\n", line_prefix, self.top); }
 
         if self.sub.len() != 0 {
-            // for (ns, last_elem) in self.sub.iter().enumerate()
-            // .map(|(i, w)| (w, i == self.sub.len() - 1))
-            // {
-            //     if last_elem    { write!(formatter, "{:width$}", ns, width=width+1); }
-            //     else            { write!(formatter, "{:width$}\n", ns, width=width+1); }
-            // }
             for ns in self.sub.iter() {
                 write!(formatter, "\n{:width$}", ns, width = width + 1)?;
             }
@@ -92,6 +81,7 @@ impl Display for NestedString {
         write!(formatter, "")
     }
 }
+
 /// The enum used to represent the distinct _raw_ values of a comment
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Value {
@@ -124,8 +114,8 @@ fn parse_single_line(line: &str) -> Value {
             break;
         };
     }
-    line.drain(..chars_to_skip); //remove leading whitespaces and sublist mark
-    line = line.trim_start().to_string(); //remove leading whitespaces after sublist mark
+    line.drain(..chars_to_skip); // Remove leading whitespaces and sublist mark
+    line = line.trim_start().to_string(); // Remove leading whitespaces after sublist mark
     if let Some(notation) = line.contains_any_notation() {
         let split = line.split_whitespace().collect::<Vec<&str>>();
         Value::Notation(notation, NestedString::new(split[1..].to_vec().join(" ")))
@@ -165,14 +155,14 @@ pub fn parse_comment(input: &str) -> Vec<Value> {
         };
         if let Value::Continuation(line, leading_whitespaces, sublist) = value {
             for nd in (0..=nesting_depth).rev() {
-                //asume that sublist level takes at least two whitespaces, and single whitespace is a typo
+                // Assume that sublist level takes at least two whitespaces, and single whitespace is a typo
                 if leading_whitespaces >= nesting_spaces[nd] + 2 {
-                    //sublist level has increased
+                    // Sublist level has increased
                     nesting_depth += 1;
                     nesting_spaces.push(leading_whitespaces);
                     break;
                 } else if leading_whitespaces + 2 <= nesting_spaces[nd] {
-                    //sublist level has decreased
+                    // Sublist level has decreased
                     nesting_depth -= 1;
                     nesting_spaces.pop();
                     continue;
@@ -190,13 +180,11 @@ pub fn parse_comment(input: &str) -> Vec<Value> {
                     values.push(Value::Text(values_depths));
                 }
                 None => {
-                    //we shouldn't(?) be here (None means that this is first line, so it can not be continuation)
                     values.push(Value::Text(NestedString::new(line)));
                     nesting_depth = 0;
                     nesting_spaces = vec![0];
                 }
                 Some(v) => {
-                    //we shouldn't(?) be here
                     values.push(v);
                     values.push(Value::Text(NestedString::new(line)));
                     nesting_depth = 0;
