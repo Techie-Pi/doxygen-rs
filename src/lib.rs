@@ -17,7 +17,7 @@
 //!
 //! # Usage with bindgen >= 0.63
 //!
-//! ```no_run
+//! ```compile_fail
 //! #[derive(Debug)]
 //! struct Cb;
 //!
