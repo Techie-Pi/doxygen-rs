@@ -15,6 +15,19 @@
 //! assert_eq!(rustdoc, "Example Doxygen brief\n\n");
 //! ```
 //!
+//! # Usage with bindgen >= 0.63
+//!
+//! ```
+//! #[derive(Debug)]
+//! struct Cb;
+//!
+//! impl ParseCallbacks for Cb {
+//!     fn process_comment(&self, comment: &str) -> Option<String> {
+//!         Some(doxygen_rs::transform(comment))
+//!     }
+//! }
+//! ```
+//!
 //! # Supported commands
 //! See the [tracking issue](https://github.com/Techie-Pi/doxygen-rs/issues/1) for the exhaustive list
 use crate::parser::StringType;
