@@ -31,6 +31,3 @@ use doxygen_rs::transform;
 let rustdoc = transform("@brief Example Doxygen brief");
 assert_eq!(rustdoc, "Example Doxygen brief\n\n");
 ```
-
-## Architecture
-Check [architecture.md](docs/architecture.md)
