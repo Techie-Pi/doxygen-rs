@@ -173,24 +173,19 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
                         }
                     };
 
-                    let arg_name = {
-                        let split = content
-                            .top
-                            .split_whitespace()
-                            .map(|v| v.to_string())
-                            .collect::<Vec<String>>();
-                        split.first().unwrap().to_owned()
-                    };
+                    // Parse the top line into argument name, and description (if any).
+                    let mut split = content.top.splitn(2, char::is_whitespace);
+                    let arg_name = split
+                        .next()
+                        .expect("content.top should be non-empty")
+                        .to_owned();
+                    let description = split.next().map(String::from);
 
-                    let description = {
-                        let split: Vec<&str> = content.top.splitn(2, char::is_whitespace).collect();
-                        content.top = split[1].to_string();
-                        if content.top.is_empty() {
-                            None
-                        } else {
-                            Some(content)
-                        }
-                    };
+                    // Place the description back inside the content, to preserve any sub-lists.
+                    let description = description.map(|desc| {
+                        content.top = desc;
+                        content
+                    });
 
                     params.push(Param {
                         arg_name,
