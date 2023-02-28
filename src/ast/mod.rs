@@ -173,24 +173,19 @@ pub fn generate_ast(input: Vec<Value>) -> ParsedDoxygen {
                         }
                     };
 
-                    let arg_name = {
-                        let split = content
-                            .top
-                            .split_whitespace()
-                            .map(|v| v.to_string())
-                            .collect::<Vec<String>>();
-                        split.first().unwrap().to_owned()
-                    };
+                    // Parse the top line into argument name, and description (if any).
+                    let mut split = content.top.splitn(2, char::is_whitespace);
+                    let arg_name = split
+                        .next()
+                        .expect("content.top should be non-empty")
+                        .to_owned();
+                    let description = split.next().map(String::from);
 
-                    let description = {
-                        let split: Vec<&str> = content.top.splitn(2, char::is_whitespace).collect();
-                        content.top = split[1].to_string();
-                        if content.top.is_empty() {
-                            None
-                        } else {
-                            Some(content)
-                        }
-                    };
+                    // Place the description back inside the content, to preserve any sub-lists.
+                    let description = description.map(|desc| {
+                        content.top = desc;
+                        content
+                    });
 
                     params.push(Param {
                         arg_name,
@@ -427,5 +422,40 @@ mod tests {
             Some(NestedString::new("The dog's name.".to_string()))
         );
         assert_eq!(first_param.direction, None);
+    }
+
+    #[test]
+    fn parses_params_and_returns_missing_descriptions() {
+        let doxygen = generate_ast(parser::parse_comment(" @brief Search for needle in string from position start.\n @param string\n @param needle\n @param start\n @return size_t"));
+
+        assert_eq!(
+            doxygen.brief,
+            Some(NestedString::new(
+                "Search for needle in string from position start.".to_string()
+            )),
+        );
+
+        let params = doxygen.params.unwrap();
+        assert_eq!(params.len(), 3);
+
+        let param_string = &params[0];
+        assert_eq!(param_string.arg_name, "string".to_string());
+        assert_eq!(param_string.description, None);
+        assert_eq!(param_string.direction, None);
+
+        let param_needle = &params[1];
+        assert_eq!(param_needle.arg_name, "needle".to_string());
+        assert_eq!(param_needle.description, None);
+        assert_eq!(param_needle.direction, None);
+
+        let param_start = &params[2];
+        assert_eq!(param_start.arg_name, "start".to_string());
+        assert_eq!(param_start.description, None);
+        assert_eq!(param_start.direction, None);
+
+        let returns = doxygen.returns.unwrap();
+        assert_eq!(returns.len(), 1);
+        assert_eq!(returns[0].0, NestedString::new("size_t".to_string()));
+        assert!(doxygen.return_values.is_none());
     }
 }
