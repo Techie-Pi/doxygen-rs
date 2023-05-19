@@ -148,7 +148,11 @@ fn parse_items(input: Vec<LexItem>) -> Result<Vec<GrammarItem>, ParseError> {
                     *text += "\n"
                 }
             }
-            _ => {}
+            LexItem::Paren(v) => {
+                if let Some(GrammarItem::Text(text)) = grammar_items.last_mut() {
+                    *text += &v.to_string()
+                }
+            }
         }
     }
 
