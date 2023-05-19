@@ -176,6 +176,22 @@ mod test {
     }
 
     #[test]
+    pub fn paren_in_notation() {
+        let result = parse("@note hoge_t = {a, b, c}".into()).unwrap();
+        assert_eq!(
+            result,
+            vec![
+                GrammarItem::Notation {
+                    meta: vec![],
+                    params: vec![],
+                    tag: "note".into(),
+                },
+                GrammarItem::Text("hoge_t = {a, b, c}".into())
+            ]
+        );
+    }
+
+    #[test]
     pub fn param() {
         let result =
             parse("@param[in] random This is, without a doubt, a random argument.".into()).unwrap();
