@@ -148,7 +148,11 @@ fn parse_items(input: Vec<LexItem>) -> Result<Vec<GrammarItem>, ParseError> {
                     *text += "\n"
                 }
             }
-            _ => {}
+            LexItem::Paren(v) => {
+                if let Some(GrammarItem::Text(text)) = grammar_items.last_mut() {
+                    *text += &v.to_string()
+                }
+            }
         }
     }
 
@@ -171,6 +175,22 @@ mod test {
                     tag: "name".into(),
                 },
                 GrammarItem::Text("Memory Management".into())
+            ]
+        );
+    }
+
+    #[test]
+    pub fn paren_in_notation() {
+        let result = parse("@note hoge_t = {a, b, c}".into()).unwrap();
+        assert_eq!(
+            result,
+            vec![
+                GrammarItem::Notation {
+                    meta: vec![],
+                    params: vec![],
+                    tag: "note".into(),
+                },
+                GrammarItem::Text("hoge_t = {a, b, c}".into())
             ]
         );
     }
