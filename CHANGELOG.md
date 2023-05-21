@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.4.1
+
+- Fix missing parentheses in text ([#7](https://github.com/Techie-Pi/doxygen-rs/pull/7))
+
 ## Version 0.4.0
 
 - Rewrote _all_ the internals to improve speed and developer experience.
