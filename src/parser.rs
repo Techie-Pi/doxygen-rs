@@ -230,4 +230,20 @@ mod test {
             ]
         );
     }
+
+    #[test]
+    pub fn trims_param_texts() {
+        let result = parse("@param[in]           var                                         Example description".into()).unwrap();
+        assert_eq!(
+            result,
+            vec![
+                GrammarItem::Notation {
+                    meta: vec!["in".into()],
+                    params: vec!["var".into()],
+                    tag: "param".into(),
+                },
+                GrammarItem::Text(" Example description".into())
+            ]
+        )
+    }
 }

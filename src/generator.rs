@@ -13,6 +13,7 @@ pub fn rustdoc(input: String) -> Result<String, ParseError> {
     let mut already_added_params = false;
     let mut already_added_returns = false;
     let mut already_added_throws = false;
+    let mut group_started = false;
 
     for item in parsed {
         result += &match item {
@@ -41,10 +42,20 @@ pub fn rustdoc(input: String) -> Result<String, ParseError> {
 
                 str
             }
-            GrammarItem::Text(v) => v,
+            GrammarItem::Text(v) => if group_started {
+                v.replacen("*", "", 1)
+            } else {
+                v
+            },
             // See <https://stackoverflow.com/a/40354789>
-            GrammarItem::GroupStart => String::from("# "),
-            GrammarItem::GroupEnd => continue,
+            GrammarItem::GroupStart => {
+                group_started = true;
+                String::from("# ")
+            },
+            GrammarItem::GroupEnd => {
+                group_started = false;
+                continue
+            },
         };
     }
 

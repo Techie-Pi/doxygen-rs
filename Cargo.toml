@@ -6,7 +6,7 @@ repository = "https://github.com/Techie-Pi/doxygen-rs/"
 keywords = ["bindgen", "doxygen", "rustdoc"]
 readme = "README.md"
 license = "BSD-3-Clause"
-version = "0.4.1"
+version = "0.4.2"
 edition = "2021"
 
 [dependencies]

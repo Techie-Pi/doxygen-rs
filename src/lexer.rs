@@ -35,7 +35,11 @@ pub(crate) fn lex(input: String) -> Vec<LexItem> {
                 result.push(LexItem::Paren(c));
             }
             ' ' => {
-                result.push(LexItem::Space);
+                if let Some(v) = result.last_mut() {
+                    if !matches!(v, LexItem::Space) {
+                        result.push(LexItem::Space);
+                    }
+                }
             }
             '\n' => {
                 result.push(LexItem::NewLine);
