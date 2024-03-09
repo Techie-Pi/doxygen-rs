@@ -25,20 +25,44 @@ pub(crate) enum GrammarItem {
 }
 
 pub(crate) fn parse(input: String) -> Result<Vec<GrammarItem>, ParseError> {
-    let mut lexed = lex(input);
-    lexed.push(LexItem::Space);
-    lexed.push(LexItem::Space);
-    lexed.push(LexItem::Space);
+    let lexed = lex(input);
     parse_items(lexed)
 }
 
 fn parse_items(input: Vec<LexItem>) -> Result<Vec<GrammarItem>, ParseError> {
     let mut grammar_items = vec![];
-    let mut param_iter_skip_count = 0;
+    let mut param_word_skip_count = 0;
 
-    for item in input.windows(4) {
-        let current = item.get(0).unwrap();
-        let next = item.get(1);
+    for (index, current) in input.iter().enumerate() {
+        let rest = &input[index..];
+        let next = rest.get(1);
+
+        if matches!(current, LexItem::Word(_)) && param_word_skip_count > 0 {
+            param_word_skip_count -= 1;
+            continue;
+        }
+
+        // Do not do any formatting inside of code blocks
+        let ends_code = matches!(current, LexItem::At(_))
+            && matches!(next, Some(LexItem::Word(v)) if v == "endcode");
+        if !ends_code {
+            match &mut grammar_items[..] {
+                [.., GrammarItem::Notation { tag, .. }] if tag == "code" => {
+                    let mut text = String::new();
+                    current.push_to(&mut text);
+
+                    grammar_items.push(GrammarItem::Text(text));
+                    continue;
+                }
+                [.., GrammarItem::Notation { tag, .. }, GrammarItem::Text(text)]
+                    if tag == "code" =>
+                {
+                    current.push_to(text);
+                    continue;
+                }
+                _ => {}
+            }
+        }
 
         match current {
             LexItem::At(_) => {
@@ -56,8 +80,9 @@ fn parse_items(input: Vec<LexItem>) -> Result<Vec<GrammarItem>, ParseError> {
                         },
                         LexItem::Word(v) => {
                             let mut meta = vec![];
-                            let params;
                             let content;
+
+                            let expects_params;
 
                             if v.starts_with("param") {
                                 let value = v.split('[').collect::<Vec<_>>();
@@ -79,34 +104,36 @@ fn parse_items(input: Vec<LexItem>) -> Result<Vec<GrammarItem>, ParseError> {
                                     },
                                 }
 
-                                params = match item.get(3) {
-                                    None => vec![],
-                                    Some(LexItem::Word(v)) => vec![v.into()],
-                                    Some(_) => vec![],
-                                };
-
-                                content = "param"
+                                content = "param";
+                                expects_params = true;
                             } else {
                                 content = v;
 
-                                params = match v.as_str() {
+                                expects_params = match v.as_str() {
                                     "a" | "b" | "c" | "p" | "emoji" | "e" | "em" | "def"
                                     | "class" | "category" | "concept" | "enum" | "example"
                                     | "extends" | "file" | "sa" | "see" | "retval"
-                                    | "exception" | "throw" | "throws" => match item.get(3) {
-                                        None => vec![],
-                                        Some(LexItem::Word(v)) => vec![v.into()],
-                                        Some(_) => vec![],
-                                    },
-                                    _ => vec![],
+                                    | "exception" | "throw" | "throws" => true,
+                                    _ => false,
                                 };
                             }
 
-                            if params.is_empty() {
-                                param_iter_skip_count = 1;
+                            let params = if expects_params {
+                                rest.iter().skip(2).find_map(|next| match next {
+                                    LexItem::Word(word) => Some(word),
+                                    _ => None,
+                                })
                             } else {
-                                param_iter_skip_count = 2;
-                            }
+                                None
+                            };
+
+                            let params = if let Some(word) = params {
+                                param_word_skip_count = 2;
+                                vec![word.into()]
+                            } else {
+                                param_word_skip_count = 1;
+                                vec![]
+                            };
 
                             grammar_items.push(GrammarItem::Notation {
                                 meta,
@@ -119,11 +146,6 @@ fn parse_items(input: Vec<LexItem>) -> Result<Vec<GrammarItem>, ParseError> {
                 }
             }
             LexItem::Word(v) => {
-                if param_iter_skip_count > 0 {
-                    param_iter_skip_count -= 1;
-                    continue;
-                }
-
                 if let Some(prev) = grammar_items.last_mut() {
                     match prev {
                         GrammarItem::Text(text) => *text += v,
@@ -133,16 +155,20 @@ fn parse_items(input: Vec<LexItem>) -> Result<Vec<GrammarItem>, ParseError> {
                     grammar_items.push(GrammarItem::Text(v.into()));
                 }
             }
-            LexItem::Space => {
-                if let Some(prev) = grammar_items.last_mut() {
-                    match prev {
-                        GrammarItem::Text(text) => *text += " ",
-                        _ => grammar_items.push(GrammarItem::Text("".into())),
-                    }
-                } else {
-                    grammar_items.push(GrammarItem::Text(" ".into()))
+            LexItem::Whitespace(whitespace) => match &mut grammar_items[..] {
+                [.., GrammarItem::Notation { tag, .. }] if tag == "code" => {
+                    grammar_items.push(GrammarItem::Text((*whitespace).into()))
                 }
-            }
+                [.., GrammarItem::Notation { tag, .. }, GrammarItem::Text(text)]
+                    if tag == "code" =>
+                {
+                    text.push(*whitespace)
+                }
+                [.., GrammarItem::Text(text)] if text.ends_with(' ') => {}
+                [.., GrammarItem::Text(text)] => text.push(' '),
+                [] => grammar_items.push(GrammarItem::Text(' '.into())),
+                _ => grammar_items.push(GrammarItem::Text("".into())),
+            },
             LexItem::NewLine => {
                 if let Some(GrammarItem::Text(text)) = grammar_items.last_mut() {
                     *text += "\n"
@@ -233,7 +259,11 @@ mod test {
 
     #[test]
     pub fn trims_param_texts() {
-        let result = parse("@param[in]           var                                         Example description".into()).unwrap();
+        let result = parse(
+            "@param[in]           var                                         Example description"
+                .into(),
+        )
+        .unwrap();
         assert_eq!(
             result,
             vec![

@@ -3,8 +3,20 @@ pub(crate) enum LexItem {
     At(String),
     Paren(char),
     Word(String),
-    Space,
+    Whitespace(char),
     NewLine,
+}
+
+impl LexItem {
+    pub(crate) fn push_to(&self, acc: &mut String) {
+        match self {
+            LexItem::At(s) => acc.push_str(s),
+            LexItem::Paren(c) => acc.push(*c),
+            LexItem::Word(s) => acc.push_str(s),
+            LexItem::Whitespace(c) => acc.push(*c),
+            LexItem::NewLine => acc.push('\n'),
+        }
+    }
 }
 
 pub(crate) fn lex(input: String) -> Vec<LexItem> {
@@ -34,12 +46,8 @@ pub(crate) fn lex(input: String) -> Vec<LexItem> {
             '{' | '}' => {
                 result.push(LexItem::Paren(c));
             }
-            ' ' => {
-                if let Some(v) = result.last_mut() {
-                    if !matches!(v, LexItem::Space) {
-                        result.push(LexItem::Space);
-                    }
-                }
+            ' ' | '\t' => {
+                result.push(LexItem::Whitespace(c));
             }
             '\n' => {
                 result.push(LexItem::NewLine);
@@ -72,9 +80,9 @@ mod test {
             vec![
                 LexItem::At("@".into()),
                 LexItem::Word("name".into()),
-                LexItem::Space,
+                LexItem::Whitespace(' '),
                 LexItem::Word("Memory".into()),
-                LexItem::Space,
+                LexItem::Whitespace(' '),
                 LexItem::Word("Management".into())
             ]
         );
@@ -85,9 +93,9 @@ mod test {
             vec![
                 LexItem::At("\\".into()),
                 LexItem::Word("name".into()),
-                LexItem::Space,
+                LexItem::Whitespace(' '),
                 LexItem::Word("Memory".into()),
-                LexItem::Space,
+                LexItem::Whitespace(' '),
                 LexItem::Word("Management".into())
             ]
         );
@@ -98,9 +106,9 @@ mod test {
             vec![
                 LexItem::At("\\\\".into()),
                 LexItem::Word("name".into()),
-                LexItem::Space,
+                LexItem::Whitespace(' '),
                 LexItem::Word("Memory".into()),
-                LexItem::Space,
+                LexItem::Whitespace(' '),
                 LexItem::Word("Management".into())
             ]
         );
@@ -116,12 +124,12 @@ mod test {
                 LexItem::Paren('{'),
                 LexItem::NewLine,
                 LexItem::Word("*".into()),
-                LexItem::Space,
+                LexItem::Whitespace(' '),
                 LexItem::At("@".into()),
                 LexItem::Word("name".into()),
-                LexItem::Space,
+                LexItem::Whitespace(' '),
                 LexItem::Word("Memory".into()),
-                LexItem::Space,
+                LexItem::Whitespace(' '),
                 LexItem::Word("Management".into()),
                 LexItem::NewLine,
                 LexItem::At("@".into()),
