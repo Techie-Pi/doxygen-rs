@@ -42,20 +42,22 @@ pub fn rustdoc(input: String) -> Result<String, ParseError> {
 
                 str
             }
-            GrammarItem::Text(v) => if group_started {
-                v.replacen("*", "", 1)
-            } else {
-                v
-            },
+            GrammarItem::Text(v) => {
+                if group_started {
+                    v.replacen("*", "", 1)
+                } else {
+                    v
+                }
+            }
             // See <https://stackoverflow.com/a/40354789>
             GrammarItem::GroupStart => {
                 group_started = true;
                 String::from("# ")
-            },
+            }
             GrammarItem::GroupEnd => {
                 group_started = false;
-                continue
-            },
+                continue;
+            }
         };
     }
 
@@ -171,6 +173,12 @@ fn generate_notation(
             "par" => String::from("# "),
             "details" | "pre" | "post" => String::from("\n\n"),
             "brief" | "short" => String::new(),
+            "code" => {
+                let lang = params.first().map(|p| p.as_str()).unwrap_or_default();
+                let lang = lang.strip_prefix('.').unwrap_or(lang);
+                format!("```{lang}")
+            }
+            "endcode" => String::from("```"),
             _ => String::new(),
         },
         (new_param, new_return, new_throw),
@@ -356,6 +364,22 @@ mod test {
         test_rustdoc!(
             "@throw std::io::bonk This is thrown when INSANE things happen.\n@throws std::net::meow This is thrown when BAD things happen.\n@exception std::fs::no This is thrown when NEFARIOUS things happen.",
             "# Throws\n\n* [`std::io::bonk`] - This is thrown when INSANE things happen.\n* [`std::net::meow`] - This is thrown when BAD things happen.\n* [`std::fs::no`] - This is thrown when NEFARIOUS things happen."
+        );
+    }
+
+    #[test]
+    fn code() {
+        test_rustdoc!(
+            "@code\nfn main() {\n        test( [1] ); // @code @throw\n@endcode",
+            "```\nfn main() {\n        test( [1] ); // @code @throw\n```"
+        );
+    }
+
+    #[test]
+    fn code_with_lang() {
+        test_rustdoc!(
+            "@code{.rs}\nfn main() {\n        test( [1] ); // @code @throw\n@endcode",
+            "```rs\nfn main() {\n        test( [1] ); // @code @throw\n```"
         );
     }
 
