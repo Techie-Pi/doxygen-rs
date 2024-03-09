@@ -157,6 +157,10 @@ fn parse_items(input: Vec<LexItem>) -> Result<Vec<GrammarItem>, ParseError> {
                                 params,
                                 tag: content.into(),
                             });
+
+                            if content == "endcode" {
+                                grammar_items.push(GrammarItem::Text("".into()));
+                            }
                         }
                         _ => {}
                     }
@@ -330,6 +334,7 @@ mod test {
                     params: vec![],
                     tag: "endcode".into(),
                 },
+                GrammarItem::Text("".into())
             ]
         )
     }
@@ -352,6 +357,36 @@ mod test {
                     params: vec![],
                     tag: "endcode".into(),
                 },
+                GrammarItem::Text("".into())
+            ]
+        )
+    }
+
+    #[test]
+    pub fn code_with_args() {
+        let result = parse("@code\nfn main() {}\n@endcode\n\n@param[in] a - a".into()).unwrap();
+
+        assert_eq!(
+            result,
+            vec![
+                GrammarItem::Notation {
+                    meta: vec![],
+                    params: vec![],
+                    tag: "code".into(),
+                },
+                GrammarItem::Text("\nfn main() {}\n".into()),
+                GrammarItem::Notation {
+                    meta: vec![],
+                    params: vec![],
+                    tag: "endcode".into(),
+                },
+                GrammarItem::Text("\n\n".into()),
+                GrammarItem::Notation {
+                    meta: vec!["in".into()],
+                    params: vec!["a".into()],
+                    tag: "param".into()
+                },
+                GrammarItem::Text(" - a".into())
             ]
         )
     }
