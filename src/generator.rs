@@ -174,7 +174,7 @@ fn generate_notation(
             "details" | "pre" | "post" => String::from("\n\n"),
             "brief" | "short" => String::new(),
             "code" => {
-                let lang = params.get(0).map(|p| p.as_str()).unwrap_or_default();
+                let lang = params.first().map(|p| p.as_str()).unwrap_or_default();
                 let lang = lang.strip_prefix('.').unwrap_or(lang);
                 format!("```{lang}")
             }

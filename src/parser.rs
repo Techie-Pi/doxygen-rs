@@ -131,8 +131,7 @@ fn parse_items(input: Vec<LexItem>) -> Result<Vec<GrammarItem>, ParseError> {
                                     .iter()
                                     .enumerate()
                                     .skip(2)
-                                    .skip_while(|(_, next)| matches!(next, LexItem::Whitespace(_)))
-                                    .next()
+                                    .find(|(_, next)| !matches!(next, LexItem::Whitespace(_)))
                                     .and_then(|(skip, next)| match next {
                                         LexItem::Word(word) => Some((skip, word)),
                                         _ => None,
