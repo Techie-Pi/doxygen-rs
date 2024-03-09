@@ -173,7 +173,11 @@ fn generate_notation(
             "par" => String::from("# "),
             "details" | "pre" | "post" => String::from("\n\n"),
             "brief" | "short" => String::new(),
-            "code" => String::from("```"),
+            "code" => {
+                let lang = params.get(0).map(|p| p.as_str()).unwrap_or_default();
+                let lang = lang.strip_prefix('.').unwrap_or(lang);
+                format!("```{lang}")
+            }
             "endcode" => String::from("```"),
             _ => String::new(),
         },
@@ -368,6 +372,14 @@ mod test {
         test_rustdoc!(
             "@code\nfn main() {\n        test( [1] ); // @code @throw\n@endcode",
             "```\nfn main() {\n        test( [1] ); // @code @throw\n```"
+        );
+    }
+
+    #[test]
+    fn code_with_lang() {
+        test_rustdoc!(
+            "@code{.rs}\nfn main() {\n        test( [1] ); // @code @throw\n@endcode",
+            "```rs\nfn main() {\n        test( [1] ); // @code @throw\n```"
         );
     }
 
